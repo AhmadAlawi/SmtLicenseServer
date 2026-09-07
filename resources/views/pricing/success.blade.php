@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>You're subscribed — SMT POS SaaS</title>
+    <style>
+        body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f7f7f8; text-align: center; }
+        div { max-width: 480px; }
+    </style>
+</head>
+<body>
+<div>
+    <h1>Thanks — you're subscribed.</h1>
+    <p>Your instance is being provisioned now. You'll receive an email with your login details and instance URL shortly.</p>
+</div>
+</body>
+</html>
