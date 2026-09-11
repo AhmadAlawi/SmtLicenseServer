@@ -10,6 +10,10 @@ use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
 // /signup below is the wizard; landing's pricing section links into it.
 Route::get('/', [LandingController::class, 'index'])->name('home');
 
+// SEO/comparison landing page (marketing-ideas skill, #11 — competitor
+// comparison page) — targets "foodics alternative" search intent.
+Route::get('foodics-alternative', [LandingController::class, 'foodicsAlternative'])->name('foodics-alternative');
+
 // Signup wizard. No auth — a prospective customer doesn't have an account
 // yet; the license itself is minted by the Stripe webhook once payment is
 // confirmed, not here.
