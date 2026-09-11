@@ -111,4 +111,16 @@ Route::get('__diag-mail', function (\Illuminate\Http\Request $request) {
     }
 });
 
+// TEMPORARY diagnostic — no confirmation emails arriving, need to see
+// real jobs/failed_jobs table state (SMTP was confirmed hanging earlier
+// via __diag-mail). Remove after testing.
+Route::get('__diag-queue', function (\Illuminate\Http\Request $request) {
+    abort_unless($request->query('key') === config('app.key'), 404);
+
+    return response()->json([
+        'pending' => \Illuminate\Support\Facades\DB::table('jobs')->get(['id', 'queue', 'attempts', 'reserved_at', 'available_at', 'created_at']),
+        'failed'  => \Illuminate\Support\Facades\DB::table('failed_jobs')->orderByDesc('id')->limit(10)->get(['id', 'queue', 'exception', 'failed_at']),
+    ]);
+});
+
 require __DIR__.'/dashboard.php';
