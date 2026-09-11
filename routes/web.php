@@ -90,4 +90,25 @@ Route::get('__diag-seed', function (\Illuminate\Http\Request $request) {
     }
 });
 
+// TEMPORARY diagnostic — signup POST returns bare 500 (mail send is the
+// prime suspect, SMTP config just got wired). Test mail delivery in
+// isolation. Remove after testing.
+Route::get('__diag-mail', function (\Illuminate\Http\Request $request) {
+    abort_unless($request->query('key') === config('app.key'), 404);
+
+    try {
+        \Illuminate\Support\Facades\Mail::raw('diag test', function ($m) {
+            $m->to('ahmad.alalawi@smt.com.jo')->subject('diag test');
+        });
+
+        return response()->json(['ok' => true]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'class' => get_class($e),
+            'file'  => $e->getFile().':'.$e->getLine(),
+        ], 500);
+    }
+});
+
 require __DIR__.'/dashboard.php';
