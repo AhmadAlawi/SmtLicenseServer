@@ -121,6 +121,14 @@ class RailwayClient
                 'environmentId' => $environmentId,
                 'serviceId'     => $serviceId,
                 'domain'        => $domain,
+                // Confirmed live (2026-09-11): omitting this left Railway's
+                // edge routing to whatever it defaults to (not port 80,
+                // where our Dockerfile's nginx actually listens) —
+                // produced a healthy, fully-booted container that Railway
+                // still 502'd with "Application failed to respond" on
+                // every request. Every image built from this repo's
+                // Dockerfile (or SaasPOS's) listens on 80; pin it.
+                'targetPort'    => 80,
             ],
         ]);
 
