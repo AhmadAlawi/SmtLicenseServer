@@ -85,6 +85,8 @@ class PricingController extends Controller
             Storage::disk('public')->put($logoPath, file_get_contents($logo->getPathname()));
         }
 
+        $utm = $request->session()->get('utm_attribution', []);
+
         $signup = PendingSignup::query()->create([
             'token'          => PendingSignup::makeToken(),
             'plan_code'      => $plan->code,
@@ -95,11 +97,17 @@ class PricingController extends Controller
             'admin_name'     => $data['admin_name'],
             'admin_email'    => $data['admin_email'],
             'admin_password' => $data['admin_password'],
+            'utm_source'     => $utm['utm_source'] ?? null,
+            'utm_medium'     => $utm['utm_medium'] ?? null,
+            'utm_campaign'   => $utm['utm_campaign'] ?? null,
+            'utm_term'       => $utm['utm_term'] ?? null,
+            'utm_content'    => $utm['utm_content'] ?? null,
+            'landing_page'   => $utm['landing_page'] ?? null,
         ]);
 
         $verifyUrl = URL::temporarySignedRoute('signup.verify', now()->addHours(24), ['token' => $signup->token]);
 
-        Mail::to($data['admin_email'])->send(new VerifySignupMail($signup, $verifyUrl));
+        Mail::to($data['admin_email'])->queue(new VerifySignupMail($signup, $verifyUrl));
 
         return view('signup.check-email', ['email' => $data['admin_email']]);
     }
