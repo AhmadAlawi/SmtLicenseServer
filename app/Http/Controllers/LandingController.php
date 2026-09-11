@@ -22,4 +22,12 @@ class LandingController extends Controller
 
         return view('landing.foodics-alternative', ['plans' => $plans]);
     }
+
+    /** Comparison/SEO page targeting "vtech alternative" search intent — V-TECH (vtech-sys.com) is a real Jordan/KSA/Kuwait/UAE POS+ERP vendor, no public pricing found (sales-gated, same framing as Foodics). */
+    public function vtechAlternative(): View
+    {
+        $plans = Plan::query()->where('is_active', true)->whereNotNull('stripe_price_id')->orderBy('seat_limit')->get();
+
+        return view('landing.vtech-alternative', ['plans' => $plans]);
+    }
 }

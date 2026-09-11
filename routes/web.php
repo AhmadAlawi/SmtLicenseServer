@@ -14,6 +14,10 @@ Route::get('/', [LandingController::class, 'index'])->name('home');
 // comparison page) — targets "foodics alternative" search intent.
 Route::get('foodics-alternative', [LandingController::class, 'foodicsAlternative'])->name('foodics-alternative');
 
+// SEO/comparison landing page — targets "vtech alternative" search intent
+// (V-TECH / vtech-sys.com, a Jordan/KSA/Kuwait/UAE POS+ERP vendor).
+Route::get('vtech-alternative', [LandingController::class, 'vtechAlternative'])->name('vtech-alternative');
+
 // Signup wizard. No auth — a prospective customer doesn't have an account
 // yet; the license itself is minted by the Stripe webhook once payment is
 // confirmed, not here.
