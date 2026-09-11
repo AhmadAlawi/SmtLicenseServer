@@ -90,11 +90,17 @@ class RailwayClient
         ]);
     }
 
+    /**
+     * Confirmed live (2026-09-11): without `latestCommit: true`, this
+     * mutation redeploys whatever commit the service last had pinned —
+     * NOT the branch's current HEAD. A plain redeploy (e.g. after just
+     * pushing new code) would silently keep serving the stale commit.
+     */
     public function deployLatest(string $serviceId, string $environmentId): void
     {
         $this->request(<<<'GQL'
             mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
-                serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+                serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId, latestCommit: true)
             }
         GQL, ['serviceId' => $serviceId, 'environmentId' => $environmentId]);
     }
