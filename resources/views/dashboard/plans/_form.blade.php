@@ -12,6 +12,10 @@
     <label>Name</label>
     <input type="text" name="name" value="{{ old('name', $plan?->name) }}" placeholder="Pro" required>
 
+    <label>Display price (marketing only — e.g. "$79/mo")</label>
+    <input type="text" name="display_price" value="{{ old('display_price', $plan?->display_price) }}" placeholder="$79">
+    <div class="hint">Shown on the landing page and wizard. The Stripe price ID below is what actually gets charged.</div>
+
     <label>Seat limit (blank = unlimited)</label>
     <input type="number" name="seat_limit" min="1" value="{{ old('seat_limit', $plan?->seat_limit) }}">
 

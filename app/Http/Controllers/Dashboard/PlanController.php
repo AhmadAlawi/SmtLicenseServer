@@ -72,6 +72,7 @@ class PlanController extends Controller
         $data = $request->validate([
             'code'            => ['required', 'string', 'max:32', 'alpha_dash', Rule::unique('plans', 'code')->ignore($plan)],
             'name'            => ['required', 'string', 'max:255'],
+            'display_price'   => ['nullable', 'string', 'max:32'],
             'seat_limit'      => ['nullable', 'integer', 'min:1'],
             'stripe_price_id' => ['nullable', 'string', 'max:255'],
             'features'        => ['nullable', 'array'],

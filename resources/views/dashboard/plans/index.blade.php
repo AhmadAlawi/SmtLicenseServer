@@ -6,12 +6,13 @@
         <a href="{{ route('dashboard.plans.create') }}" class="btn">New plan</a>
     </div>
     <table>
-        <thead><tr><th>Code</th><th>Name</th><th>Seat limit</th><th>Features</th><th>Stripe price</th><th>Active</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Code</th><th>Name</th><th>Display price</th><th>Seat limit</th><th>Features</th><th>Stripe price</th><th>Active</th><th>Actions</th></tr></thead>
         <tbody>
         @foreach ($plans as $plan)
             <tr>
                 <td>{{ $plan->code }}</td>
                 <td>{{ $plan->name }}</td>
+                <td>{{ $plan->display_price ?? '—' }}</td>
                 <td>{{ $plan->seat_limit ?? 'Unlimited' }}</td>
                 <td>{{ collect($plan->features ?? [])->filter()->keys()->implode(', ') ?: '—' }}</td>
                 <td>{{ $plan->stripe_price_id ?? '—' }}</td>
