@@ -67,7 +67,7 @@ class LicenseController extends Controller
         }
 
         try {
-            $dnsTarget = $railway->addCustomDomain(
+            $records = $railway->addCustomDomain(
                 (string) config('services.railway.project_id'),
                 (string) config('services.railway.environment_id'),
                 $instance->railway_service_id,
@@ -77,8 +77,12 @@ class LicenseController extends Controller
             return back()->withErrors(['domain' => "Railway rejected this domain: {$e->getMessage()}"]);
         }
 
-        $instance->update(['custom_domain' => $data['domain'], 'custom_domain_dns_target' => $dnsTarget]);
+        $instance->update(['custom_domain' => $data['domain'], 'custom_domain_dns_target' => $records['cname']['value']]);
 
-        return back()->with('status', "Domain {$data['domain']} registered. Tell the customer to CNAME it to: {$dnsTarget}");
+        // Railway won't issue a TLS cert without BOTH records — a customer
+        // who only adds the CNAME (the obvious one) will see the same
+        // stuck-at-VALIDATING_OWNERSHIP problem this fix addresses for the
+        // automatic white-label subdomain path.
+        return back()->with('status', "Domain {$data['domain']} registered. Tell the customer to add TWO DNS records: CNAME {$data['domain']} -> {$records['cname']['value']}, and TXT {$records['txt']['fqdn']} -> {$records['txt']['value']} (required for Railway to issue the certificate).");
     }
 }

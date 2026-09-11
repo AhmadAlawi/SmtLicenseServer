@@ -46,6 +46,34 @@ class CloudflareClient
         return $body['result']['id'];
     }
 
+    /**
+     * Railway requires this alongside the CNAME to validate domain
+     * ownership before it will issue a TLS cert — without it, custom
+     * domains sit stuck at CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP
+     * forever (confirmed live 2026-09-11: 4 test domains all stuck this
+     * way because only the CNAME was ever created).
+     *
+     * @return string the created DNS record's id
+     */
+    public function createTxtRecord(string $zoneId, string $name, string $content): string
+    {
+        $response = Http::withToken($this->apiToken)
+            ->timeout(15)
+            ->post(self::ENDPOINT."/zones/{$zoneId}/dns_records", [
+                'type'    => 'TXT',
+                'name'    => $name,
+                'content' => $content,
+                'ttl'     => 1, // "automatic"
+            ]);
+
+        $body = $response->json();
+        if ($response->failed() || ! ($body['success'] ?? false)) {
+            throw new RuntimeException('Cloudflare API error: '.json_encode($body['errors'] ?? $body, JSON_UNESCAPED_SLASHES));
+        }
+
+        return $body['result']['id'];
+    }
+
     public function deleteDnsRecord(string $zoneId, string $recordId): void
     {
         $response = Http::withToken($this->apiToken)

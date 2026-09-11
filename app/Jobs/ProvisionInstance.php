@@ -118,11 +118,15 @@ class ProvisionInstance implements ShouldQueue
             // 4. Deploy.
             $railway->deployLatest($appServiceId, $environmentId);
 
-            // 5. White-label subdomain — Railway tells us the CNAME target it needs.
-            $dnsTarget = $railway->addCustomDomain($projectId, $environmentId, $appServiceId, $domain);
+            // 5. White-label subdomain — Railway tells us the CNAME target
+            // AND a TXT ownership record it needs; both are required or
+            // cert issuance sits stuck at VALIDATING_OWNERSHIP forever.
+            $records = $railway->addCustomDomain($projectId, $environmentId, $appServiceId, $domain);
 
-            // 6. Auto-create that DNS record on the owner's own Cloudflare zone.
-            $cloudflare->createCnameRecord((string) config('services.cloudflare.zone_id'), $slug, $dnsTarget);
+            // 6. Auto-create both DNS records on the owner's own Cloudflare zone.
+            $zoneId = (string) config('services.cloudflare.zone_id');
+            $cloudflare->createCnameRecord($zoneId, $slug, $records['cname']['value']);
+            $cloudflare->createTxtRecord($zoneId, $records['txt']['fqdn'], $records['txt']['value']);
 
             // 7. Deploy is asynchronous on Railway's side — PollRailwayDeployments
             // (scheduled every minute) flips 'deploying' to 'ready'/'failed'.

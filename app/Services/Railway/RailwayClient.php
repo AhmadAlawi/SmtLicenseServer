@@ -106,12 +106,20 @@ class RailwayClient
     }
 
     /**
-     * Registers a custom domain on the service and returns the CNAME
-     * target Railway wants it pointed at. Used both for the automatic
-     * white-label subdomain and for a customer's own separate domain
-     * (added later, manually, via the staff dashboard).
+     * Registers a custom domain on the service and returns the DNS records
+     * Railway wants: both the CNAME (routes traffic) AND a TXT ownership
+     * record (`_railway-verify.<slug>` → `railway-verify=<token>`).
+     *
+     * Confirmed live (2026-09-11): the TXT record isn't optional — without
+     * it Railway's cert issuance sits stuck at
+     * CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP forever, even though the
+     * CNAME alone gets the domain "working" from a raw DNS-resolves-fine
+     * perspective. This was silently broken (only the CNAME was ever
+     * created) until this fix.
+     *
+     * @return array{cname: array{fqdn: string, value: string}, txt: array{fqdn: string, value: string}}
      */
-    public function addCustomDomain(string $projectId, string $environmentId, string $serviceId, string $domain): string
+    public function addCustomDomain(string $projectId, string $environmentId, string $serviceId, string $domain): array
     {
         $result = $this->request(<<<'GQL'
             mutation CustomDomainCreate($input: CustomDomainCreateInput!) {
@@ -138,17 +146,25 @@ class RailwayClient
             ],
         ]);
 
-        // Confirmed live (2026-09-07): the enum value is
-        // "DNS_RECORD_TYPE_CNAME", not the bare "CNAME" the field name
-        // would suggest.
+        // Confirmed live (2026-09-07): the enum values are
+        // "DNS_RECORD_TYPE_CNAME" / "DNS_RECORD_TYPE_TXT", not the bare
+        // "CNAME"/"TXT" the field name would suggest.
         $records = $result['customDomainCreate']['status']['dnsRecords'] ?? [];
         $cname   = collect($records)->firstWhere('recordType', 'DNS_RECORD_TYPE_CNAME');
+        $txt     = collect($records)->firstWhere('recordType', 'DNS_RECORD_TYPE_TXT');
 
         if ($cname === null) {
             throw new RuntimeException("Railway did not return a CNAME target for domain [{$domain}].");
         }
 
-        return $cname['requiredValue'];
+        if ($txt === null) {
+            throw new RuntimeException("Railway did not return a TXT ownership record for domain [{$domain}].");
+        }
+
+        return [
+            'cname' => ['fqdn' => $cname['fqdn'], 'value' => $cname['requiredValue']],
+            'txt'   => ['fqdn' => $txt['fqdn'], 'value' => $txt['requiredValue']],
+        ];
     }
 
     /** @return string one of PENDING|BUILDING|DEPLOYING|SUCCESS|FAILED|CRASHED (Railway's DeploymentStatus enum) */
