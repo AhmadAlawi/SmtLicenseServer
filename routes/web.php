@@ -52,7 +52,7 @@ Route::get('__diag-seed', function (\Illuminate\Http\Request $request) {
 
     try {
         if (! \App\Models\User::where('email', 'ahmad.alalawi@smt.com.jo')->exists()) {
-            \App\Models\User::factory()->create([
+            \App\Models\User::create([
                 'name' => 'SMTGROUP Admin',
                 'email' => 'ahmad.alalawi@smt.com.jo',
                 'password' => bcrypt('change-me-now'),
