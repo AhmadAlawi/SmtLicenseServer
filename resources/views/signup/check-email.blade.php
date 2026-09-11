@@ -7,6 +7,7 @@
         body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f7f7f8; text-align: center; }
         div { max-width: 480px; }
     </style>
+@include('partials.analytics')
 </head>
 <body>
 <div>

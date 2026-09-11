@@ -5,6 +5,7 @@ use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\ForgotPasswordController;
 use App\Http\Controllers\Dashboard\LicenseController;
 use App\Http\Controllers\Dashboard\PlanController;
+use App\Http\Controllers\Dashboard\SignupController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -30,6 +31,8 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
 
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+
+    Route::get('signups', [SignupController::class, 'index'])->name('signups.index');
 
     Route::get('licenses', [LicenseController::class, 'index'])->name('licenses.index');
     Route::post('licenses/{license}/suspend', [LicenseController::class, 'suspend'])->name('licenses.suspend');

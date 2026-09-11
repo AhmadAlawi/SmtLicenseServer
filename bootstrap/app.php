@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CaptureUtmParameters;
 use App\Http\Middleware\VerifyLicenseSignature;
 use App\Http\Middleware\VerifyProvisioningToken;
 use Illuminate\Foundation\Application;
@@ -15,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [CaptureUtmParameters::class]);
+
         $middleware->alias([
             'verify.license.signature'  => VerifyLicenseSignature::class,
             'verify.provisioning.token' => VerifyProvisioningToken::class,

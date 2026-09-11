@@ -63,4 +63,8 @@ return [
         'root_domain' => env('ROOT_DOMAIN', ''),
     ],
 
+    'google_analytics' => [
+        'id' => env('GA4_MEASUREMENT_ID'),
+    ],
+
 ];

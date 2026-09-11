@@ -43,6 +43,7 @@
 <nav>
     <a class="brand" href="{{ route('dashboard.home') }}">@include('partials.logo', ['size' => 22, 'dark' => true])</a>
     <a href="{{ route('dashboard.customers.index') }}">Customers</a>
+    <a href="{{ route('dashboard.signups.index') }}">Signups</a>
     <a href="{{ route('dashboard.licenses.index') }}">Licenses</a>
     <a href="{{ route('dashboard.plans.index') }}">Plans</a>
     <form class="inline" method="POST" action="{{ route('dashboard.logout') }}" style="margin-left:auto">
