@@ -22,6 +22,7 @@
 <nav class="hidden lg:flex items-center gap-space-xs bg-surface-container/60 p-space-xs rounded-full">
 <a class="px-space-md py-space-sm font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all rounded-full" href="#features">Features</a>
 <a class="px-space-md py-space-sm rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="#how-it-works">How it Works</a>
+<a class="px-space-md py-space-sm rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="https://demo.sphereofthesun.com/login" target="_blank" rel="noopener">Demo</a>
 <a class="px-space-md py-space-sm rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="#pricing">Pricing</a>
 <a class="px-space-md py-space-sm rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="#faq">FAQ</a>
 </nav>
@@ -55,9 +56,9 @@ Unify checkout, inventory, and reporting across every branch you run — offline
 <span>Start Your Setup</span>
 <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
 </a>
-<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-sm px-space-xl py-4 rounded-full bg-surface-container-lowest text-on-surface font-label-lg text-label-lg font-semibold hover:bg-surface-container transition-all shadow-sm active:scale-95" href="#how-it-works">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-sm px-space-xl py-4 rounded-full bg-surface-container-lowest text-on-surface font-label-lg text-label-lg font-semibold hover:bg-surface-container transition-all shadow-sm active:scale-95" href="https://demo.sphereofthesun.com/login" target="_blank" rel="noopener">
 <span class="material-symbols-outlined text-secondary text-[20px]">play_circle</span>
-<span>See How It Works</span>
+<span>Try Live Demo</span>
 </a>
 </div>
 
