@@ -133,7 +133,12 @@ class ProvisionInstance implements ShouldQueue
             // 6. Auto-create both DNS records on the owner's own Cloudflare zone.
             $zoneId = (string) config('services.cloudflare.zone_id');
             $cloudflare->createCnameRecord($zoneId, $slug, $records['cname']['value']);
-            $cloudflare->createTxtRecord($zoneId, $records['txt']['fqdn'], $records['txt']['value']);
+            // null when Railway already trusts this zone's ownership (e.g.
+            // verified earlier via a different subdomain) — no TXT record
+            // needed in that case.
+            if ($records['txt'] !== null) {
+                $cloudflare->createTxtRecord($zoneId, $records['txt']['fqdn'], $records['txt']['value']);
+            }
 
             // 7. Deploy is asynchronous on Railway's side — PollRailwayDeployments
             // (scheduled every minute) flips 'deploying' to 'ready'/'failed'.

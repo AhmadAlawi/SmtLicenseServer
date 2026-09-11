@@ -153,7 +153,11 @@ class RailwayClient
                 customDomainCreate(input: $input) {
                     id
                     domain
-                    status { dnsRecords { hostlabel fqdn recordType requiredValue currentValue status } }
+                    status {
+                        dnsRecords { hostlabel fqdn recordType requiredValue currentValue status }
+                        verificationDnsHost
+                        verificationToken
+                    }
                 }
             }
         GQL, [
@@ -173,24 +177,46 @@ class RailwayClient
             ],
         ]);
 
-        // Confirmed live (2026-09-07): the enum values are
-        // "DNS_RECORD_TYPE_CNAME" / "DNS_RECORD_TYPE_TXT", not the bare
-        // "CNAME"/"TXT" the field name would suggest.
-        $records = $result['customDomainCreate']['status']['dnsRecords'] ?? [];
+        $status = $result['customDomainCreate']['status'] ?? [];
+
+        // Confirmed live (2026-09-07): the enum value is
+        // "DNS_RECORD_TYPE_CNAME", not the bare "CNAME" the field name
+        // would suggest.
+        $records = $status['dnsRecords'] ?? [];
         $cname   = collect($records)->firstWhere('recordType', 'DNS_RECORD_TYPE_CNAME');
-        $txt     = collect($records)->firstWhere('recordType', 'DNS_RECORD_TYPE_TXT');
 
         if ($cname === null) {
             throw new RuntimeException("Railway did not return a CNAME target for domain [{$domain}].");
         }
 
-        if ($txt === null) {
-            throw new RuntimeException("Railway did not return a TXT ownership record for domain [{$domain}].");
+        // Confirmed live (2026-09-11): whether the TXT ownership record
+        // shows up inside `dnsRecords` is inconsistent — some domains had a
+        // DNS_RECORD_TYPE_TXT entry there, others (same zone, same day)
+        // didn't, even though `verificationDnsHost`/`verificationToken`
+        // were populated for all of them and cert issuance got stuck at
+        // VALIDATING_OWNERSHIP without it regardless. These two top-level
+        // fields are the reliable source — a domain with a zone Railway
+        // has never verified needs the TXT record created from these; a
+        // domain whose zone Railway already trusts (verified via an
+        // earlier subdomain) has empty/absent values here, meaning no TXT
+        // record is needed at all.
+        $txt = null;
+        if (! empty($status['verificationDnsHost']) && ! empty($status['verificationToken'])) {
+            // verificationDnsHost is "_railway-verify.<first label of
+            // $domain>" — e.g. "_railway-verify.demo" for
+            // "demo.sphereofthesun.com". Append the ROOT domain (everything
+            // after that first label), not the full $domain again, or this
+            // doubles the label ("_railway-verify.demo.demo.sphere...").
+            $rootDomain = str_contains($domain, '.') ? substr($domain, strpos($domain, '.') + 1) : $domain;
+            $txt = [
+                'fqdn'  => $status['verificationDnsHost'].'.'.$rootDomain,
+                'value' => $status['verificationToken'],
+            ];
         }
 
         return [
             'cname' => ['fqdn' => $cname['fqdn'], 'value' => $cname['requiredValue']],
-            'txt'   => ['fqdn' => $txt['fqdn'], 'value' => $txt['requiredValue']],
+            'txt'   => $txt,
         ];
     }
 

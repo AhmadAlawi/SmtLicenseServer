@@ -83,6 +83,11 @@ class LicenseController extends Controller
         // who only adds the CNAME (the obvious one) will see the same
         // stuck-at-VALIDATING_OWNERSHIP problem this fix addresses for the
         // automatic white-label subdomain path.
-        return back()->with('status', "Domain {$data['domain']} registered. Tell the customer to add TWO DNS records: CNAME {$data['domain']} -> {$records['cname']['value']}, and TXT {$records['txt']['fqdn']} -> {$records['txt']['value']} (required for Railway to issue the certificate).");
+        $message = "Domain {$data['domain']} registered. Tell the customer to add a CNAME: {$data['domain']} -> {$records['cname']['value']}";
+        $message .= $records['txt'] !== null
+            ? ", and a TXT record: {$records['txt']['fqdn']} -> {$records['txt']['value']} (required for Railway to issue the certificate)."
+            : '.';
+
+        return back()->with('status', $message);
     }
 }
