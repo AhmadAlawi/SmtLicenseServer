@@ -112,6 +112,13 @@ Route::get('__diag-mail', function (\Illuminate\Http\Request $request) {
         $socketResult = ['connected' => false, 'elapsed_s' => $elapsed, 'errno' => $errno, 'errstr' => $errstr];
     }
 
+    // Return here if only the socket test is wanted — Mail::raw() below has
+    // no timeout of its own and can hang well past this request's client
+    // timeout, so the two need to be checkable independently.
+    if ($request->boolean('socket_only')) {
+        return response()->json(['socket' => $socketResult]);
+    }
+
     try {
         \Illuminate\Support\Facades\Mail::raw('diag test', function ($m) {
             $m->to('ahmad.alalawi@smt.com.jo')->subject('diag test');
