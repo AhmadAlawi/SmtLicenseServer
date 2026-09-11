@@ -50,35 +50,44 @@ Route::get('__diag-seed', function (\Illuminate\Http\Request $request) {
 
     $log = [];
 
-    if (! \App\Models\User::where('email', 'ahmad.alalawi@smt.com.jo')->exists()) {
-        \App\Models\User::factory()->create([
-            'name' => 'SMTGROUP Admin',
-            'email' => 'ahmad.alalawi@smt.com.jo',
-            'password' => bcrypt('change-me-now'),
-        ]);
-        $log[] = 'staff user created';
-    } else {
-        $log[] = 'staff user already exists';
+    try {
+        if (! \App\Models\User::where('email', 'ahmad.alalawi@smt.com.jo')->exists()) {
+            \App\Models\User::factory()->create([
+                'name' => 'SMTGROUP Admin',
+                'email' => 'ahmad.alalawi@smt.com.jo',
+                'password' => bcrypt('change-me-now'),
+            ]);
+            $log[] = 'staff user created';
+        } else {
+            $log[] = 'staff user already exists';
+        }
+
+        (new \Database\Seeders\PlansSeeder())->run();
+        $log[] = 'PlansSeeder ran';
+
+        $testPlans = [
+            ['code' => 'test1', 'name' => 'Test Plan 1', 'display_price' => '$10', 'seat_limit' => 2, 'features' => ['multi_store' => false, 'advanced_reporting' => false], 'stripe_price_id' => 'price_1UETvxDyFexUg5KSas2UryOa'],
+            ['code' => 'test2', 'name' => 'Test Plan 2', 'display_price' => '$10', 'seat_limit' => 5, 'features' => ['multi_store' => true, 'advanced_reporting' => false], 'stripe_price_id' => 'price_1UETvzDyFexUg5KSmJXx0wsD'],
+            ['code' => 'test3', 'name' => 'Test Plan 3', 'display_price' => '$10', 'seat_limit' => 10, 'features' => ['multi_store' => true, 'advanced_reporting' => true], 'stripe_price_id' => 'price_1UETw1DyFexUg5KSnaDxWVVg'],
+            ['code' => 'test4', 'name' => 'Test Plan Unlimited', 'display_price' => '$10', 'seat_limit' => null, 'features' => ['multi_store' => true, 'advanced_reporting' => true], 'stripe_price_id' => 'price_1UETw2DyFexUg5KStjIM0QQI'],
+        ];
+        foreach ($testPlans as $p) {
+            $code = $p['code'];
+            unset($p['code']);
+            $p['is_active'] = true;
+            \App\Models\Plan::updateOrCreate(['code' => $code], $p);
+        }
+        $log[] = '4 test plans created';
+
+        return response()->json(['log' => $log, 'plans' => \App\Models\Plan::pluck('code')]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'log' => $log,
+            'error' => $e->getMessage(),
+            'file' => $e->getFile().':'.$e->getLine(),
+            'trace' => collect($e->getTrace())->take(5),
+        ], 500);
     }
-
-    (new \Database\Seeders\PlansSeeder())->run();
-    $log[] = 'PlansSeeder ran';
-
-    $testPlans = [
-        ['code' => 'test1', 'name' => 'Test Plan 1', 'display_price' => '$10', 'seat_limit' => 2, 'features' => ['multi_store' => false, 'advanced_reporting' => false], 'stripe_price_id' => 'price_1UETvxDyFexUg5KSas2UryOa'],
-        ['code' => 'test2', 'name' => 'Test Plan 2', 'display_price' => '$10', 'seat_limit' => 5, 'features' => ['multi_store' => true, 'advanced_reporting' => false], 'stripe_price_id' => 'price_1UETvzDyFexUg5KSmJXx0wsD'],
-        ['code' => 'test3', 'name' => 'Test Plan 3', 'display_price' => '$10', 'seat_limit' => 10, 'features' => ['multi_store' => true, 'advanced_reporting' => true], 'stripe_price_id' => 'price_1UETw1DyFexUg5KSnaDxWVVg'],
-        ['code' => 'test4', 'name' => 'Test Plan Unlimited', 'display_price' => '$10', 'seat_limit' => null, 'features' => ['multi_store' => true, 'advanced_reporting' => true], 'stripe_price_id' => 'price_1UETw2DyFexUg5KStjIM0QQI'],
-    ];
-    foreach ($testPlans as $p) {
-        $code = $p['code'];
-        unset($p['code']);
-        $p['is_active'] = true;
-        \App\Models\Plan::updateOrCreate(['code' => $code], $p);
-    }
-    $log[] = '4 test plans created';
-
-    return response()->json(['log' => $log, 'plans' => \App\Models\Plan::pluck('code')]);
 });
 
 require __DIR__.'/dashboard.php';
