@@ -32,4 +32,14 @@ Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->middleware(VerifyWebhookSignature::class)
     ->name('cashier.webhook');
 
+// TEMPORARY diagnostic — reads back a pending signup's token without email
+// access, for multi-plan provisioning tests. Guarded by a shared secret via
+// query param, not left in permanently. Remove after testing.
+Route::get('__diag-signup-token', function (\Illuminate\Http\Request $request) {
+    abort_unless($request->query('key') === config('app.key'), 404);
+    $signup = \App\Models\PendingSignup::query()->where('subdomain_slug', $request->query('slug'))->first();
+
+    return response()->json($signup ? ['token' => $signup->token] : ['error' => 'not found']);
+});
+
 require __DIR__.'/dashboard.php';
