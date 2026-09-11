@@ -153,4 +153,36 @@ Route::get('__diag-queue', function (\Illuminate\Http\Request $request) {
     ]);
 });
 
+// TEMPORARY diagnostic — cleans up the 4-plan test signups (testplan1-4):
+// Instance/License rows, plus the test Customer if it has no other
+// licenses left. Remove after use, same as the other __diag-* routes.
+Route::get('__diag-cleanup', function (\Illuminate\Http\Request $request) {
+    abort_unless($request->query('key') === config('app.key'), 404);
+
+    $log = [];
+    $instances = \App\Models\Instance::query()->whereIn('subdomain_slug', ['testplan1', 'testplan2', 'testplan3', 'testplan4'])->with('license.customer')->get();
+
+    $customerIds = [];
+    foreach ($instances as $instance) {
+        $license = $instance->license;
+        $customerIds[] = $license?->customer_id;
+        $instance->delete();
+        $log[] = "deleted instance {$instance->subdomain_slug}";
+        if ($license) {
+            $license->delete();
+            $log[] = "deleted license #{$license->id}";
+        }
+    }
+
+    foreach (array_unique(array_filter($customerIds)) as $customerId) {
+        $customer = \App\Models\Customer::find($customerId);
+        if ($customer && $customer->licenses()->count() === 0) {
+            $customer->delete();
+            $log[] = "deleted customer #{$customerId} ({$customer->email})";
+        }
+    }
+
+    return response()->json(['log' => $log]);
+});
+
 require __DIR__.'/dashboard.php';
