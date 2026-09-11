@@ -2,55 +2,43 @@
   <defs>
     <style>
       .brand-title-dark {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
         font-size: 58px;
-        letter-spacing: -1.5px;
-        fill: #FFFFFF;
+        letter-spacing: -2px;
+        fill: #F2F5EF;
       }
       .brand-subtitle-dark {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-weight: 500;
-        font-size: 14px;
-        letter-spacing: 3.2px;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 3.5px;
         text-transform: uppercase;
-        fill: #94A3B8;
+        fill: #9CFF1E;
       }
     </style>
   </defs>
 
-  <!-- Dark Slate/Indigo Surface -->
-  <rect width="760" height="220" rx="16" fill="#0F172A"/>
-
-  <!-- Brand Mark / Inverted Icon -->
-  <g transform="translate(50, 40)">
-    <!-- Base Drawer Foundation -->
-    <rect x="12" y="78" width="116" height="42" rx="10" fill="#14B8A6"/>
-    <!-- Drawer Accent -->
-    <rect x="26" y="96" width="44" height="6" rx="3" fill="#0F172A"/>
-    <circle cx="98" cy="99" r="4" fill="#0F172A"/>
-
-    <!-- Network Connections -->
-    <path d="M70 78 V34" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
-    <path d="M70 48 L38 68" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
-    <path d="M70 48 L102 68" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/>
-
-    <!-- Apex Node -->
-    <rect x="54" y="16" width="32" height="32" rx="8" fill="#F8FAFC"/>
-    <path d="M70 24 L63 32 H67 V38 H73 V32 H77 Z" fill="#0F172A"/>
-
-    <!-- Branch Nodes -->
-    <circle cx="34" cy="70" r="10" fill="#F8FAFC"/>
-    <circle cx="34" cy="70" r="4" fill="#0D9488"/>
-
-    <circle cx="106" cy="70" r="10" fill="#F8FAFC"/>
-    <circle cx="106" cy="70" r="4" fill="#0D9488"/>
+  <!-- Logo Mark Group (background canvas removed — transparent, for use on dark surfaces) -->
+  <g transform="translate(56, 42)">
+    <rect x="10" y="80" width="116" height="42" rx="21" fill="#9CFF1E"/>
+    <rect x="28" y="98" width="46" height="7" rx="3.5" fill="#214944"/>
+    <circle cx="100" cy="101.5" r="4.5" fill="#214944"/>
+    <path d="M68 80 V36" stroke="#F2F5EF" stroke-width="5" stroke-linecap="round"/>
+    <path d="M68 50 L36 72" stroke="#F2F5EF" stroke-width="5" stroke-linecap="round"/>
+    <path d="M68 50 L100 72" stroke="#F2F5EF" stroke-width="5" stroke-linecap="round"/>
+    <rect x="50" y="16" width="36" height="36" rx="14" fill="#F2F5EF"/>
+    <path d="M68 24 L59 34 H64.5 V41 H71.5 V34 H77 Z" fill="#214944"/>
+    <circle cx="32" cy="74" r="11" fill="#F2F5EF"/>
+    <circle cx="32" cy="74" r="4.5" fill="#9CFF1E"/>
+    <circle cx="104" cy="74" r="11" fill="#F2F5EF"/>
+    <circle cx="104" cy="74" r="4.5" fill="#9CFF1E"/>
   </g>
 
-  <!-- Wordmark -->
-  <g transform="translate(225, 118)">
+  <!-- Typography Suite -->
+  <g transform="translate(216, 120)">
     <text x="0" y="0" class="brand-title-dark">Tillora</text>
-    <circle cx="178" cy="-8" r="6" fill="#2DD4BF"/>
+    <circle cx="184" cy="-10" r="7" fill="#9CFF1E"/>
     <text x="2" y="32" class="brand-subtitle-dark">Retail Cloud POS</text>
   </g>
 </svg>

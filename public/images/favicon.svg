@@ -1,28 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
-  <!-- Rounded App Icon Background -->
-  <rect width="256" height="256" rx="56" fill="#0F172A"/>
-
-  <!-- Icon Geometry Centered (160x140 area) -->
-  <g transform="translate(38, 42)">
-    <!-- Base Till Drawer -->
-    <rect x="10" y="98" width="160" height="54" rx="14" fill="#0D9488"/>
-    <rect x="28" y="122" width="60" height="8" rx="4" fill="#FFFFFF"/>
-    <circle cx="140" cy="126" r="5" fill="#FFFFFF"/>
-
-    <!-- Network Connectors -->
-    <path d="M90 98 V40" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
-    <path d="M90 58 L46 84" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
-    <path d="M90 58 L134 84" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
-
-    <!-- Apex Hub -->
-    <rect x="68" y="16" width="44" height="44" rx="12" fill="#FFFFFF"/>
-    <path d="M90 27 L80 38 H86 V47 H94 V38 H100 Z" fill="#0D9488"/>
-
-    <!-- Left & Right Nodes -->
-    <circle cx="42" cy="88" r="14" fill="#FFFFFF"/>
-    <circle cx="42" cy="88" r="6" fill="#0D9488"/>
-
-    <circle cx="138" cy="88" r="14" fill="#FFFFFF"/>
-    <circle cx="138" cy="88" r="6" fill="#0D9488"/>
+  <rect width="256" height="256" rx="64" fill="#214944"/>
+  <g transform="translate(48, 48)">
+    <rect x="8" y="96" width="144" height="52" rx="26" fill="#9CFF1E"/>
+    <rect x="28" y="118" width="56" height="8" rx="4" fill="#214944"/>
+    <circle cx="124" cy="122" r="5" fill="#214944"/>
+    <path d="M80 96 V38" stroke="#F2F5EF" stroke-width="7" stroke-linecap="round"/>
+    <path d="M80 58 L38 84" stroke="#F2F5EF" stroke-width="7" stroke-linecap="round"/>
+    <path d="M80 58 L122 84" stroke="#F2F5EF" stroke-width="7" stroke-linecap="round"/>
+    <rect x="60" y="16" width="40" height="40" rx="14" fill="#F2F5EF"/>
+    <path d="M80 25 L70 37 H76 V46 H84 V37 H90 Z" fill="#214944"/>
+    <circle cx="34" cy="86" r="14" fill="#F2F5EF"/>
+    <circle cx="34" cy="86" r="6" fill="#9CFF1E"/>
+    <circle cx="126" cy="86" r="14" fill="#F2F5EF"/>
+    <circle cx="126" cy="86" r="6" fill="#9CFF1E"/>
   </g>
 </svg>
