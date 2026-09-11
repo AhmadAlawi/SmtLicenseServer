@@ -69,6 +69,13 @@ class ProvisionInstance implements ShouldQueue
             $dbServiceId = $railway->createServiceFromImage($projectId, $environmentId, "{$slug}-db", 'mysql:8.0');
             $instance->forceFill(['railway_db_service_id' => $dbServiceId])->save();
 
+            // Without this, the DB container runs on ephemeral storage —
+            // any restart/reschedule (not just a manual redeploy) silently
+            // wipes the tenant's entire database. Must exist before the
+            // service's first deploy so mysqld initializes its data
+            // directory on the volume from the start.
+            $railway->createVolume($projectId, $environmentId, $dbServiceId, '/var/lib/mysql');
+
             $railway->upsertVariables($projectId, $environmentId, $dbServiceId, [
                 'MYSQL_ROOT_PASSWORD' => Str::random(32),
                 'MYSQL_DATABASE'      => $dbName,

@@ -53,6 +53,33 @@ class RailwayClient
         return $result['serviceCreate']['id'];
     }
 
+    /**
+     * Attach a persistent volume to a service at the given mount path.
+     *
+     * Confirmed live (2026-09-11): a bare `mysql:8.0` image service with NO
+     * volume was silently running on the container's ephemeral filesystem —
+     * a restart/reschedule of the DB container (which Railway can do at any
+     * time, not just on a manual redeploy) wipes all data. This is not
+     * optional for a database service; every tenant's `{slug}-db` needs one.
+     */
+    public function createVolume(string $projectId, string $environmentId, string $serviceId, string $mountPath): string
+    {
+        $result = $this->request(<<<'GQL'
+            mutation VolumeCreate($input: VolumeCreateInput!) {
+                volumeCreate(input: $input) { id }
+            }
+        GQL, [
+            'input' => [
+                'projectId'     => $projectId,
+                'environmentId' => $environmentId,
+                'serviceId'     => $serviceId,
+                'mountPath'     => $mountPath,
+            ],
+        ]);
+
+        return $result['volumeCreate']['id'];
+    }
+
     /** Create the tenant's app service, deployed from the SaaS POS repo's generic Dockerfile. */
     public function createServiceFromRepo(string $projectId, string $environmentId, string $name, string $repo, string $branch): string
     {
