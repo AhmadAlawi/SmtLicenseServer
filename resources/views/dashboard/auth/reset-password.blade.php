@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Reset password — SMT License Server</title>
+    <title>Reset password — Tillora</title>
     <style>
         body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #1a1a2e; }
         form { background: #fff; padding: 32px; border-radius: 8px; width: 320px; }

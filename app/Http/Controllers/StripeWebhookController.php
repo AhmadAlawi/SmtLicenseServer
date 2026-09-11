@@ -11,6 +11,7 @@ use App\Models\PendingSignup;
 use App\Models\Plan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
@@ -96,6 +97,8 @@ class StripeWebhookController extends WebhookController
             [
                 'subdomain_slug' => $signup->subdomain_slug,
                 'company_name'   => $signup->company_name,
+                'branch_count'   => $signup->branch_count,
+                'logo_url'       => $signup->logo_path ? Storage::disk('public')->url($signup->logo_path) : null,
                 'admin_name'     => $signup->admin_name,
                 'admin_email'    => $signup->admin_email,
                 'admin_password' => $signup->admin_password,

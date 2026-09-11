@@ -10,21 +10,25 @@ use App\Models\Plan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Laravel\Cashier\Checkout;
 
 /**
- * Public purchase flow (SaaS conversion plan Phase 5/7).
+ * The signup wizard (SaaS conversion plan Phase 5/7/8) — reached from the
+ * Tillora landing page's "Start now"/plan links, route names `signup.*`.
  *
- * Two steps, not one: submitting the form does NOT go straight to Stripe —
- * it emails a signed confirmation link first (`store()` → `verify-email`
- * view), and clicking THAT link is what actually redirects to Stripe
- * Checkout (`verify()`). This stops a typo'd/fake email from burning a
- * Stripe Checkout session for nothing, and matches "email verification"
- * literally rather than relying on Stripe's own receipt as a stand-in.
+ * Two steps, not one: submitting the wizard does NOT go straight to
+ * Stripe — it emails a signed confirmation link first (`store()` →
+ * `signup.check-email` view), and clicking THAT link is what actually
+ * redirects to Stripe Checkout (`verify()`). This stops a typo'd/fake
+ * email from burning a Stripe Checkout session for nothing, and matches
+ * "email verification" literally rather than relying on Stripe's own
+ * receipt as a stand-in.
  *
  * Neither the license nor the actual instance is created here —
  * {@see StripeWebhookController::handleCheckoutSessionCompleted} does that
@@ -39,7 +43,7 @@ class PricingController extends Controller
     {
         $plans = Plan::query()->where('is_active', true)->whereNotNull('stripe_price_id')->orderBy('seat_limit')->get();
 
-        return view('pricing.index', ['plans' => $plans, 'rootDomain' => config('services.platform.root_domain')]);
+        return view('signup.wizard', ['plans' => $plans, 'rootDomain' => config('services.platform.root_domain')]);
     }
 
     public function store(Request $request): View|RedirectResponse
@@ -48,6 +52,8 @@ class PricingController extends Controller
             'plan'           => ['required', 'exists:plans,code'],
             'subdomain'      => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', Rule::unique('instances', 'subdomain_slug')],
             'company_name'   => ['required', 'string', 'max:255'],
+            'branch_count'   => ['nullable', 'integer', 'min:1', 'max:500'],
+            'logo'           => ['nullable', 'image', 'max:4096'],
             'admin_name'     => ['required', 'string', 'max:255'],
             'admin_email'    => ['required', 'email', 'max:255'],
             'admin_password' => ['required', 'confirmed', Password::min(8)],
@@ -58,21 +64,44 @@ class PricingController extends Controller
             return back()->withErrors(['plan' => 'This plan is not yet available for online purchase.']);
         }
 
+        // Stored on this app's own public disk — the tenant instance being
+        // provisioned doesn't exist yet and has no storage of its own to
+        // upload into. ProvisionInstance passes the resulting public URL
+        // through as TENANT_LOGO_URL; TenantProvision (SaasPOS repo) fetches
+        // it into the new instance's own storage the same way
+        // ProvisionMeccaMall::fetchToPublicDisk() already does.
+        // Not using UploadedFile::store()/storeAs() here — both rely on
+        // getRealPath(), which returns false for the temp upload on this
+        // (Windows) dev server, throwing "Path cannot be empty" from deep
+        // inside FilesystemAdapter. getPathname() returns the raw tmp_name
+        // without going through realpath() and works reliably — same
+        // read-bytes-then-put pattern already used by
+        // ProvisionMeccaMall::fetchToPublicDisk() / TenantProvision::fetchLogo().
+        $logoPath = null;
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $logo = $request->file('logo');
+            $filename = Str::random(24).'.'.$logo->getClientOriginalExtension();
+            $logoPath = 'signup-logos/'.$filename;
+            Storage::disk('public')->put($logoPath, file_get_contents($logo->getPathname()));
+        }
+
         $signup = PendingSignup::query()->create([
             'token'          => PendingSignup::makeToken(),
             'plan_code'      => $plan->code,
             'subdomain_slug' => $data['subdomain'],
             'company_name'   => $data['company_name'],
+            'branch_count'   => $data['branch_count'] ?? null,
+            'logo_path'      => $logoPath,
             'admin_name'     => $data['admin_name'],
             'admin_email'    => $data['admin_email'],
             'admin_password' => $data['admin_password'],
         ]);
 
-        $verifyUrl = URL::temporarySignedRoute('pricing.verify', now()->addHours(24), ['token' => $signup->token]);
+        $verifyUrl = URL::temporarySignedRoute('signup.verify', now()->addHours(24), ['token' => $signup->token]);
 
         Mail::to($data['admin_email'])->send(new VerifySignupMail($signup, $verifyUrl));
 
-        return view('pricing.check-email', ['email' => $data['admin_email']]);
+        return view('signup.check-email', ['email' => $data['admin_email']]);
     }
 
     /** The signed link from VerifySignupMail — this is what actually starts Stripe Checkout. */
@@ -86,7 +115,7 @@ class PricingController extends Controller
         // Re-check availability — the slug could have been taken by
         // someone else between form submission and clicking the link.
         if (Instance::query()->where('subdomain_slug', $signup->subdomain_slug)->exists()) {
-            return redirect()->route('pricing.index')->withErrors(['subdomain' => 'That subdomain was taken while your email confirmation was pending. Please sign up again.']);
+            return redirect()->route('signup.index')->withErrors(['subdomain' => 'That subdomain was taken while your email confirmation was pending. Please sign up again.']);
         }
 
         $customer = Customer::query()->firstOrCreate(
@@ -97,18 +126,18 @@ class PricingController extends Controller
         return $customer
             ->newSubscription('default', $plan->stripe_price_id)
             ->checkout([
-                'success_url' => route('pricing.success'),
-                'cancel_url'  => route('pricing.index'),
+                'success_url' => route('signup.success'),
+                'cancel_url'  => route('signup.index'),
                 'metadata'    => ['signup_token' => $signup->token],
             ]);
     }
 
     public function success(): View
     {
-        return view('pricing.success');
+        return view('signup.success');
     }
 
-    /** Live availability check for the subdomain field (AJAX from the pricing form). */
+    /** Live availability check for the subdomain field (AJAX from the wizard). */
     public function checkSubdomain(Request $request): \Illuminate\Http\JsonResponse
     {
         $slug = (string) $request->query('subdomain', '');

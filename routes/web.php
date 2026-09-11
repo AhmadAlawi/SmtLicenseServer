@@ -1,21 +1,24 @@
 <?php
 
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
 
-Route::get('/', [PricingController::class, 'index'])->name('home');
+// Marketing site (SaaS conversion plan Phase 8) — the actual front door.
+// /signup below is the wizard; landing's pricing section links into it.
+Route::get('/', [LandingController::class, 'index'])->name('home');
 
-// Public purchase flow (SaaS conversion plan Phase 5). No auth — a
-// prospective customer doesn't have an account yet; the license itself is
-// minted by the Stripe webhook once payment is confirmed, not here.
-Route::get('pricing', [PricingController::class, 'index'])->name('pricing.index');
-Route::get('pricing/check-subdomain', [PricingController::class, 'checkSubdomain'])->name('pricing.check-subdomain');
-Route::post('pricing/signup', [PricingController::class, 'store'])->name('pricing.signup');
+// Signup wizard. No auth — a prospective customer doesn't have an account
+// yet; the license itself is minted by the Stripe webhook once payment is
+// confirmed, not here.
+Route::get('pricing', [PricingController::class, 'index'])->name('signup.index');
+Route::get('pricing/check-subdomain', [PricingController::class, 'checkSubdomain'])->name('signup.check-subdomain');
+Route::post('pricing/signup', [PricingController::class, 'store'])->name('signup.store');
 // Signed — the emailed link itself IS the auth; `signed` middleware 403s an invalid/expired/tampered one.
-Route::get('pricing/verify/{token}', [PricingController::class, 'verify'])->middleware('signed')->name('pricing.verify');
-Route::get('pricing/success', [PricingController::class, 'success'])->name('pricing.success');
+Route::get('pricing/verify/{token}', [PricingController::class, 'verify'])->middleware('signed')->name('signup.verify');
+Route::get('pricing/success', [PricingController::class, 'success'])->name('signup.success');
 
 // Cashier's own auto-registration is disabled (AppServiceProvider::register())
 // so this route — same path Cashier would have used — can point at

@@ -38,7 +38,7 @@ class ProvisionInstance implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * @param array{subdomain_slug: string, company_name: string, admin_name: string, admin_email: string, admin_password: string} $signup
+     * @param array{subdomain_slug: string, company_name: string, branch_count: ?int, logo_url: ?string, admin_name: string, admin_email: string, admin_password: string} $signup
      */
     public function __construct(
         public License $license,
@@ -106,6 +106,13 @@ class ProvisionInstance implements ShouldQueue
                 'TENANT_ADMIN_NAME'     => $this->signup['admin_name'],
                 'TENANT_ADMIN_EMAIL'    => $this->signup['admin_email'],
                 'TENANT_ADMIN_PASSWORD' => $this->signup['admin_password'],
+                // Optional wizard fields (Phase 8) — TenantProvision (SaasPOS
+                // repo) fetches the logo URL into its own storage the same
+                // way ProvisionMeccaMall::fetchToPublicDisk() already does.
+                // Branch count isn't consumed tenant-side at all, it's
+                // license-server-only (staff visibility / plan sizing).
+                'TENANT_LOGO_URL'       => $this->signup['logo_url'] ?? '',
+                'TENANT_BRANCH_COUNT'   => (string) ($this->signup['branch_count'] ?? ''),
             ]);
 
             // 4. Deploy.
