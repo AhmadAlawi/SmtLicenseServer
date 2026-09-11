@@ -96,17 +96,36 @@ Route::get('__diag-seed', function (\Illuminate\Http\Request $request) {
 Route::get('__diag-mail', function (\Illuminate\Http\Request $request) {
     abort_unless($request->query('key') === config('app.key'), 404);
 
+    // Raw socket test first — isolates "can this container reach the SMTP
+    // host/port at all" from "does Laravel's mail config work", since the
+    // symptom (60s+ hang, MaxAttemptsExceededException) matches an
+    // outbound connection that's being silently dropped, not refused.
+    $socketResult = null;
+    $start = microtime(true);
+    $fp = @fsockopen(config('mail.mailers.smtp.host'), (int) config('mail.mailers.smtp.port'), $errno, $errstr, 8);
+    $elapsed = round(microtime(true) - $start, 2);
+    if ($fp) {
+        $banner = fgets($fp, 512);
+        fclose($fp);
+        $socketResult = ['connected' => true, 'elapsed_s' => $elapsed, 'banner' => trim((string) $banner)];
+    } else {
+        $socketResult = ['connected' => false, 'elapsed_s' => $elapsed, 'errno' => $errno, 'errstr' => $errstr];
+    }
+
     try {
         \Illuminate\Support\Facades\Mail::raw('diag test', function ($m) {
             $m->to('ahmad.alalawi@smt.com.jo')->subject('diag test');
         });
 
-        return response()->json(['ok' => true]);
+        return response()->json(['socket' => $socketResult, 'mail' => ['ok' => true]]);
     } catch (\Throwable $e) {
         return response()->json([
-            'error' => $e->getMessage(),
-            'class' => get_class($e),
-            'file'  => $e->getFile().':'.$e->getLine(),
+            'socket' => $socketResult,
+            'mail' => [
+                'error' => $e->getMessage(),
+                'class' => get_class($e),
+                'file'  => $e->getFile().':'.$e->getLine(),
+            ],
         ], 500);
     }
 });
