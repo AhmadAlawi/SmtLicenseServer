@@ -88,7 +88,7 @@ class StripeWebhookController extends WebhookController
 
         $result = app(CreateLicenseForCustomer::class)($customer, $plan, "{$signup->subdomain_slug}.".config('services.platform.root_domain'));
 
-        Mail::to($customer->email)->send(new OrderConfirmationMail($customer, $plan, $signup->subdomain_slug, (string) config('services.platform.root_domain')));
+        Mail::to($customer->email)->queue(new OrderConfirmationMail($customer, $plan, $signup->subdomain_slug, (string) config('services.platform.root_domain')));
 
         ProvisionInstance::dispatch(
             $result['license'],
