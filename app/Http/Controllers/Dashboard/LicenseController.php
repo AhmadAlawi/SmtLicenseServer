@@ -88,7 +88,11 @@ class LicenseController extends Controller
             return back()->withErrors(['retry' => 'This license has no instance yet.']);
         }
 
-        $instance->forceFill(['provisioning_status' => 'deploying', 'provisioning_error' => null])->save();
+        $instance->forceFill([
+            'provisioning_status'         => 'deploying',
+            'provisioning_error'          => null,
+            'provisioning_check_attempts' => 0,
+        ])->save();
 
         return back()->with('status', "License #{$license->id}'s instance re-queued for a status check (next run within a minute).");
     }

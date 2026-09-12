@@ -11,7 +11,7 @@ class Instance extends Model
         'license_id', 'db_credentials_ref', 'container_ref', 'subdomain',
         'railway_service_id', 'railway_db_service_id',
         'subdomain_slug', 'default_domain', 'custom_domain', 'custom_domain_dns_target',
-        'provisioning_status', 'provisioning_error', 'last_seen_at',
+        'provisioning_status', 'provisioning_error', 'provisioning_check_attempts', 'last_seen_at',
     ];
 
     protected function casts(): array
