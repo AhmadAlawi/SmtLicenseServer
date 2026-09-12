@@ -56,7 +56,9 @@ class PromoCodeController extends Controller
     /** Deactivates on both sides — Stripe coupons/promotion codes can't be deleted, only archived. */
     public function deactivate(PromoCode $promoCode): RedirectResponse
     {
-        Cashier::stripe()->promotionCodes->update($promoCode->stripe_promotion_code_id, ['active' => false]);
+        // Same API-version pin as CreatePromoCode — this account's default
+        // version behaves oddly on this resource.
+        Cashier::stripe()->promotionCodes->update($promoCode->stripe_promotion_code_id, ['active' => false], ['stripe_version' => '2024-06-20']);
         $promoCode->update(['is_active' => false]);
 
         return back()->with('status', "Promo code \"{$promoCode->code}\" deactivated.");

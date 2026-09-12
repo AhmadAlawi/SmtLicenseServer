@@ -42,7 +42,12 @@ class CreatePromoCode
             $promoParams['expires_at'] = $data['expires_at']->getTimestamp();
         }
 
-        $promotionCode = $stripe->promotionCodes->create($promoParams);
+        // Confirmed live (2026-09-12): this account's default Stripe API
+        // version has renamed/dropped the `coupon` parameter on
+        // promotion_codes.create — the exact same request succeeds when
+        // pinned to a known-stable version. Pin it here rather than
+        // guessing at whatever the new parameter name is.
+        $promotionCode = $stripe->promotionCodes->create($promoParams, ['stripe_version' => '2024-06-20']);
 
         return PromoCode::create([
             'code'                     => $data['code'],
