@@ -44,4 +44,25 @@ Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
 Route::get('updates/feed.json', [UpdateFeedController::class, 'feed'])->name('updates.feed');
 Route::get('updates/download/{release}', [UpdateFeedController::class, 'download'])->name('updates.download');
 
+// TEMPORARY diagnostic — verify MAIL_FROM_NAME + branded email templates
+// render/send correctly after today's fix. Remove after use.
+Route::get('__diag-mail-preview', function (\Illuminate\Http\Request $request) {
+    abort_unless($request->query('key') === config('app.key'), 404);
+
+    $mailable = new \App\Mail\OrderConfirmationMail(
+        new \App\Models\Customer(['name' => 'Test Customer', 'email' => 'ahmad.alalawi@smt.com.jo']),
+        new \App\Models\Plan(['name' => 'Pro']),
+        'testpreview',
+        (string) config('services.platform.root_domain'),
+    );
+
+    if ($request->boolean('send')) {
+        \Illuminate\Support\Facades\Mail::to('ahmad.alalawi@smt.com.jo')->send($mailable);
+
+        return response()->json(['ok' => true, 'sent' => true]);
+    }
+
+    return $mailable->render();
+});
+
 require __DIR__.'/dashboard.php';
