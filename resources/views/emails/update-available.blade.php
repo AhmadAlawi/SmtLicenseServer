@@ -1,18 +1,17 @@
-<!DOCTYPE html>
-<html>
-<body style="font-family: system-ui, sans-serif; color: #1a1a1a;">
-<p>Hi {{ $customer->name }},</p>
-<p>A new version is available: <strong>{{ $release->version }}</strong>.</p>
+@extends('emails.layout')
+@section('subject', 'Update available: version ' . $release->version)
+@section('content')
+<p style="margin:0 0 16px 0;">Hi {{ $customer->name }},</p>
+<p style="margin:0 0 20px 0;">A new version is available: <strong style="color:#3c6a00;">{{ $release->version }}</strong></p>
 @if ($release->changelog)
-<p style="white-space: pre-line;">{{ $release->changelog }}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;">
+<tr><td style="background-color:#f2f5ef;border-radius:8px;padding:16px;font-size:14px;line-height:22px;white-space:pre-line;">{{ $release->changelog }}</td></tr>
+</table>
 @endif
-<p>Nothing happens automatically — install it whenever suits you, from Settings → Updates in your own panel:</p>
-<ul>
+<p style="margin:0 0 12px 0;">Nothing happens automatically &mdash; install it whenever suits you, from Settings &rarr; Updates in your own panel:</p>
 @forelse ($domains as $domain)
-    <li><a href="https://{{ $domain }}/admin/settings/updates">https://{{ $domain }}/admin/settings/updates</a></li>
+<p style="margin:0 0 8px 0;"><a href="https://{{ $domain }}/admin/settings/updates" style="color:#3c6a00;">https://{{ $domain }}/admin/settings/updates</a></p>
 @empty
-    <li>Settings → Updates in your admin panel</li>
+<p style="margin:0;">Settings &rarr; Updates in your admin panel.</p>
 @endforelse
-</ul>
-</body>
-</html>
+@endsection
