@@ -191,6 +191,10 @@
 <div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Admin</span><span class="font-label-lg text-label-lg text-on-surface font-bold" id="summaryAdmin">—</span></div>
 </div>
 </div>
+<div class="flex flex-col gap-1">
+<label for="promoCodeInput" class="font-body-sm text-body-sm text-secondary">Promo code (optional)</label>
+<input type="text" name="promo_code" id="promoCodeInput" value="{{ old('promo_code') }}" placeholder="LAUNCH2026" class="rounded-lg border border-outline-variant bg-surface-container-low px-space-sm py-2 font-label-lg text-label-lg text-on-surface uppercase">
+</div>
 </div>
 
 </div>

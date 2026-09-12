@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Instance;
 use App\Models\PendingSignup;
 use App\Models\Plan;
+use App\Models\PromoCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -55,6 +56,7 @@ class PricingController extends Controller
         $data = $request->validate([
             'plan'           => ['required', 'exists:plans,code'],
             'currency'       => ['nullable', 'string', 'in:USD,'.implode(',', \App\Models\Plan::CURRENCIES)],
+            'promo_code'     => ['nullable', 'string', 'max:32'],
             'subdomain'      => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', Rule::unique('instances', 'subdomain_slug')],
             'company_name'   => ['required', 'string', 'max:255'],
             'branch_count'   => ['nullable', 'integer', 'min:1', 'max:500'],
@@ -67,6 +69,14 @@ class PricingController extends Controller
         $plan = Plan::query()->where('code', $data['plan'])->where('is_active', true)->firstOrFail();
         if ($plan->stripe_price_id === null) {
             return back()->withErrors(['plan' => 'This plan is not yet available for online purchase.']);
+        }
+
+        $promoCode = null;
+        if (! empty($data['promo_code'])) {
+            $promoCode = PromoCode::query()->where('code', strtoupper($data['promo_code']))->first();
+            if ($promoCode === null || ! $promoCode->isUsable()) {
+                return back()->withErrors(['promo_code' => 'That promo code is invalid or has expired.'])->withInput();
+            }
         }
 
         // Stored on this app's own public disk — the tenant instance being
@@ -96,6 +106,7 @@ class PricingController extends Controller
             'token'          => PendingSignup::makeToken(),
             'plan_code'      => $plan->code,
             'currency'       => $data['currency'] ?? 'USD',
+            'promo_code'     => $promoCode?->code,
             'subdomain_slug' => $data['subdomain'],
             'company_name'   => $data['company_name'],
             'branch_count'   => $data['branch_count'] ?? null,
@@ -137,13 +148,25 @@ class PricingController extends Controller
             ['name' => $signup->company_name],
         );
 
+        $checkoutOptions = [
+            'success_url' => route('signup.success'),
+            'cancel_url'  => route('signup.index'),
+            'metadata'    => ['signup_token' => $signup->token],
+        ];
+
+        // Re-validated here, not just trusted from store() time — a code
+        // could expire/get deactivated in the window between submitting
+        // the wizard and clicking the email confirmation link.
+        if ($signup->promo_code !== null) {
+            $promoCode = PromoCode::query()->where('code', $signup->promo_code)->first();
+            if ($promoCode?->isUsable()) {
+                $checkoutOptions['discounts'] = [['promotion_code' => $promoCode->stripe_promotion_code_id]];
+            }
+        }
+
         return $customer
             ->newSubscription('default', $plan->stripePriceIdFor($signup->currency))
-            ->checkout([
-                'success_url' => route('signup.success'),
-                'cancel_url'  => route('signup.index'),
-                'metadata'    => ['signup_token' => $signup->token],
-            ]);
+            ->checkout($checkoutOptions);
     }
 
     public function success(): View

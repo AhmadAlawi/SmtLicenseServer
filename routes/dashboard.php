@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\ForgotPasswordController;
 use App\Http\Controllers\Dashboard\LicenseController;
 use App\Http\Controllers\Dashboard\PlanController;
+use App\Http\Controllers\Dashboard\PromoCodeController;
 use App\Http\Controllers\Dashboard\ReleaseController;
 use App\Http\Controllers\Dashboard\SignupController;
 use App\Http\Controllers\Dashboard\SocialConnectionController;
@@ -71,4 +72,9 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('releases/create', [ReleaseController::class, 'create'])->name('releases.create');
     Route::post('releases', [ReleaseController::class, 'store'])->name('releases.store');
     Route::delete('releases/{release}', [ReleaseController::class, 'destroy'])->name('releases.destroy');
+
+    Route::get('promo-codes', [PromoCodeController::class, 'index'])->name('promo-codes.index');
+    Route::get('promo-codes/create', [PromoCodeController::class, 'create'])->name('promo-codes.create');
+    Route::post('promo-codes', [PromoCodeController::class, 'store'])->name('promo-codes.store');
+    Route::post('promo-codes/{promoCode}/deactivate', [PromoCodeController::class, 'deactivate'])->name('promo-codes.deactivate');
 });

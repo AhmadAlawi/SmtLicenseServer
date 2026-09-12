@@ -49,6 +49,7 @@
     <a href="{{ route('dashboard.blog-posts.index') }}">Blog Posts</a>
     <a href="{{ route('dashboard.social.index') }}">Social</a>
     <a href="{{ route('dashboard.releases.index') }}">Releases</a>
+    <a href="{{ route('dashboard.promo-codes.index') }}">Promo Codes</a>
     <form class="inline" method="POST" action="{{ route('dashboard.logout') }}" style="margin-left:auto">
         @csrf
         <button type="submit" style="background:transparent;border:1px solid #444;color:#cfd2ff;padding:6px 12px;border-radius:6px">Log out</button>
