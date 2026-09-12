@@ -53,35 +53,4 @@ Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
 Route::get('updates/feed.json', [UpdateFeedController::class, 'feed'])->name('updates.feed');
 Route::get('updates/download/{release}', [UpdateFeedController::class, 'download'])->name('updates.download');
 
-// TEMPORARY diagnostic — a real tenant's DB got stuck mid-migration from a
-// crash-loop (some migrations applied, `migrations` tracking table never
-// caught up, every retry then fails on "table already exists" forever).
-// No real customer data exists yet on a signup that never finished
-// provisioning, so wiping and letting migrate run clean is safe. This
-// connects directly to the tenant's own DB over Railway's private network
-// (this app and every tenant DB share the same project/environment) — NOT
-// something this app would ever need to do again once fixed. Remove after
-// use. Guarded by both the app key and an explicit host/database match so
-// a typo can't nuke the wrong thing.
-Route::get('__diag-reset-tenant-db', function (\Illuminate\Http\Request $request) {
-    abort_unless($request->query('key') === config('app.key'), 404);
-
-    $host = $request->query('host');
-    $db   = $request->query('db');
-    $user = $request->query('user');
-    $pass = $request->query('pass');
-
-    abort_unless($host && $db && $user && $pass, 400);
-
-    try {
-        $pdo = new \PDO("mysql:host={$host};port=3306", $user, $pass, [\PDO::ATTR_TIMEOUT => 10]);
-        $pdo->exec("DROP DATABASE IF EXISTS `{$db}`");
-        $pdo->exec("CREATE DATABASE `{$db}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-
-        return response()->json(['ok' => true, 'message' => "Dropped and recreated {$db} on {$host}."]);
-    } catch (\Throwable $e) {
-        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
-    }
-});
-
 require __DIR__.'/dashboard.php';
