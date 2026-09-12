@@ -30,6 +30,12 @@
 <a class="px-space-md py-space-sm rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="#faq">FAQ</a>
 </nav>
 <div class="flex items-center gap-space-md">
+<select id="currencySelect" aria-label="Currency" class="hidden sm:block rounded-full border border-outline-variant bg-surface-container-lowest px-space-sm py-1.5 font-label-lg text-label-lg text-on-surface-variant">
+<option value="USD">USD</option>
+@foreach ($currencies as $currency)
+<option value="{{ $currency }}">{{ $currency }}</option>
+@endforeach
+</select>
 <a class="hidden sm:inline-flex px-space-md py-space-sm rounded-full font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" href="{{ route('login') }}">Staff Login</a>
 <a class="inline-flex items-center justify-center px-space-lg py-space-sm rounded-full bg-primary-container text-on-secondary-fixed font-label-lg text-label-lg font-semibold hover:bg-primary-fixed-dim transition-all shadow-[0_0_24px_0_rgba(156,255,30,0.35)]" href="{{ route('signup.index') }}">Get Started</a>
 </div>
@@ -262,8 +268,8 @@ Unify checkout, inventory, and reporting across every branch you run — offline
 <div class="mb-6">
 <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">{{ $plan->name }}</h3>
 </div>
-<div class="flex items-baseline gap-1 mb-8">
-<span class="font-display-hero text-headline-xl font-black text-on-secondary-fixed">{{ $plan->display_price ?: 'Contact us' }}</span>
+<div class="flex items-baseline gap-1 mb-8 plan-price" data-prices="{{ json_encode($plan->priceTable()) }}">
+<span class="font-display-hero text-headline-xl font-black text-on-secondary-fixed price-amount">{{ $plan->display_price ?: 'Contact us' }}</span>
 @if ($plan->display_price)<span class="font-body-md text-body-md text-on-surface-variant">/month</span>@endif
 </div>
 <ul class="space-y-4 font-body-md text-body-md text-on-surface-variant mb-8">
@@ -391,5 +397,29 @@ Choose {{ $plan->name }}
 </div>
 </div>
 
+<script>
+(function () {
+    const select = document.getElementById('currencySelect');
+    if (!select) return;
+
+    try {
+        const stored = localStorage.getItem('tillora_currency');
+        if (stored) select.value = stored;
+    } catch (e) {}
+
+    function apply() {
+        const currency = select.value;
+        document.querySelectorAll('.plan-price').forEach(el => {
+            const prices = JSON.parse(el.dataset.prices || '{}');
+            const amountEl = el.querySelector('.price-amount');
+            if (amountEl && prices[currency]) amountEl.textContent = prices[currency];
+        });
+        try { localStorage.setItem('tillora_currency', currency); } catch (e) {}
+    }
+
+    select.addEventListener('change', apply);
+    apply();
+})();
+</script>
 </body>
 </html>

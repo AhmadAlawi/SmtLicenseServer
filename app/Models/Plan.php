@@ -30,4 +30,29 @@ class Plan extends Model
 
         return $this->currency_prices[$currency]['stripe_price_id'] ?? (string) $this->stripe_price_id;
     }
+
+    /** "334 SAR" style label for a currency — reads the minor-unit amount from currency_prices (USD included, same shape). Falls back to display_price when that currency has no amount configured. */
+    public function formattedPriceFor(string $currency): ?string
+    {
+        $currency = strtoupper($currency);
+        $amount   = $this->currency_prices[$currency]['amount'] ?? null;
+        if ($amount === null) {
+            return $this->display_price;
+        }
+
+        $major = rtrim(rtrim(number_format($amount / 100, 2, '.', ''), '0'), '.');
+
+        return $currency === 'USD' ? "\${$major}" : "{$major} {$currency}";
+    }
+
+    /** @return array<string,string> currency code => formatted label, for the header/wizard dropdown's client-side price swap. */
+    public function priceTable(): array
+    {
+        $table = ['USD' => $this->formattedPriceFor('USD')];
+        foreach (self::CURRENCIES as $currency) {
+            $table[$currency] = $this->formattedPriceFor($currency);
+        }
+
+        return array_filter($table);
+    }
 }

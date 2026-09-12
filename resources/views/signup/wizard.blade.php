@@ -50,10 +50,22 @@
 
 {{-- STEP 1: Plan --}}
 <div class="step-panel flex flex-col gap-space-md" id="step-panel-1">
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-space-sm">
 <div class="flex flex-col gap-1">
 <h2 class="font-headline-lg text-headline-lg text-on-surface">Select your plan</h2>
 <p class="font-body-md text-body-md text-secondary">You can change this later.</p>
 </div>
+<div class="flex flex-col gap-1">
+<label for="currencySelect" class="font-body-sm text-body-sm text-secondary">Price in</label>
+<select id="currencySelect" class="rounded-lg border border-outline-variant bg-surface-container-low px-space-sm py-1.5 font-label-lg text-label-lg text-on-surface">
+<option value="USD">USD</option>
+@foreach ($currencies as $currency)
+<option value="{{ $currency }}">{{ $currency }}</option>
+@endforeach
+</select>
+</div>
+</div>
+<input type="hidden" name="currency" id="currencyInput" value="USD">
 <div class="grid grid-cols-1 gap-space-sm pt-space-xs">
 @foreach ($plans as $plan)
 <label class="plan-card flex items-center justify-between p-space-md rounded-lg bg-surface-container-low cursor-pointer transition-all hover:bg-surface-container">
@@ -64,8 +76,8 @@
 <span class="font-body-sm text-body-sm text-secondary">{{ $plan->seat_limit ? "Up to {$plan->seat_limit} team members" : 'Unlimited team members' }}</span>
 </div>
 </div>
-<div class="text-right">
-<span class="font-headline-sm text-headline-sm text-on-surface font-bold">{{ $plan->display_price ?: 'Contact us' }}</span>
+<div class="text-right plan-price" data-prices="{{ json_encode($plan->priceTable()) }}">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold price-amount">{{ $plan->display_price ?: 'Contact us' }}</span>
 @if ($plan->display_price)<span class="font-body-sm text-body-sm text-secondary block">/month</span>@endif
 </div>
 </label>
@@ -200,6 +212,34 @@
 </main>
 <script>
 (function () {
+    // Country/currency price swap — plain client-side text swap, no
+    // reload. Each plan card carries its own {currency: "label"} table
+    // in data-prices; the hidden #currencyInput is what actually reaches
+    // the server (PricingController::store() reads it), so what's shown
+    // here is always exactly what gets charged.
+    (function () {
+        const select = document.getElementById('currencySelect');
+        const hidden = document.getElementById('currencyInput');
+        if (!select || !hidden) return;
+
+        const stored = localStorage.getItem('tillora_currency');
+        if (stored) select.value = stored;
+
+        function apply() {
+            const currency = select.value;
+            hidden.value = currency;
+            document.querySelectorAll('.plan-price').forEach(el => {
+                const prices = JSON.parse(el.dataset.prices || '{}');
+                const amountEl = el.querySelector('.price-amount');
+                if (amountEl && prices[currency]) amountEl.textContent = prices[currency];
+            });
+            try { localStorage.setItem('tillora_currency', currency); } catch (e) {}
+        }
+
+        select.addEventListener('change', apply);
+        apply();
+    })();
+
     let step = 1;
     const total = 5;
     const labels = ['Plan', 'Shop Details', 'Address', 'Admin Account', 'Review & Confirm'];

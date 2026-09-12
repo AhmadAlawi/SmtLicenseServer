@@ -43,13 +43,18 @@ class PricingController extends Controller
     {
         $plans = Plan::query()->where('is_active', true)->whereNotNull('stripe_price_id')->orderBy('seat_limit')->get();
 
-        return view('signup.wizard', ['plans' => $plans, 'rootDomain' => config('services.platform.root_domain')]);
+        return view('signup.wizard', [
+            'plans'      => $plans,
+            'rootDomain' => config('services.platform.root_domain'),
+            'currencies' => Plan::CURRENCIES,
+        ]);
     }
 
     public function store(Request $request): View|RedirectResponse
     {
         $data = $request->validate([
             'plan'           => ['required', 'exists:plans,code'],
+            'currency'       => ['nullable', 'string', 'in:USD,'.implode(',', \App\Models\Plan::CURRENCIES)],
             'subdomain'      => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', Rule::unique('instances', 'subdomain_slug')],
             'company_name'   => ['required', 'string', 'max:255'],
             'branch_count'   => ['nullable', 'integer', 'min:1', 'max:500'],
@@ -90,6 +95,7 @@ class PricingController extends Controller
         $signup = PendingSignup::query()->create([
             'token'          => PendingSignup::makeToken(),
             'plan_code'      => $plan->code,
+            'currency'       => $data['currency'] ?? 'USD',
             'subdomain_slug' => $data['subdomain'],
             'company_name'   => $data['company_name'],
             'branch_count'   => $data['branch_count'] ?? null,
@@ -132,7 +138,7 @@ class PricingController extends Controller
         );
 
         return $customer
-            ->newSubscription('default', $plan->stripe_price_id)
+            ->newSubscription('default', $plan->stripePriceIdFor($signup->currency))
             ->checkout([
                 'success_url' => route('signup.success'),
                 'cancel_url'  => route('signup.index'),

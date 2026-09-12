@@ -12,7 +12,7 @@ class LandingController extends Controller
     {
         $plans = Plan::query()->where('is_active', true)->whereNotNull('stripe_price_id')->orderBy('seat_limit')->get();
 
-        return view('landing.index', ['plans' => $plans]);
+        return view('landing.index', ['plans' => $plans, 'currencies' => Plan::CURRENCIES]);
     }
 
     /** Comparison/SEO page (marketing-ideas skill, idea #11) — targets "foodics alternative" search intent. */
