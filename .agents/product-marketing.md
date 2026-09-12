@@ -1,7 +1,7 @@
 # Product Marketing Context
 
-**Document version:** v2
-**Last updated:** 2026-09-11
+**Document version:** v3
+**Last updated:** 2026-09-12
 
 ## Product Overview
 **One-liner:** Tillora is a self-serve, multi-branch retail POS SaaS — sign up online, get your own fully isolated running POS instance automatically, no sales call.
@@ -12,16 +12,16 @@
 
 **Product type:** SaaS, single-tenant-per-customer (each customer gets a dedicated DB + container, not a shared multi-tenant app).
 
-**Business model:** Subscription (Stripe Checkout, recurring). 3 published tiers — Starter, Pro, Business — differentiated by seat limit and feature gates (see Pricing below). No free trial: checkout charges immediately. Currency: USD (`CASHIER_CURRENCY=usd`), though target market is Jordan/MENA (JOD used inside the provisioned POS product itself).
+**Business model:** Subscription (Stripe Checkout, recurring, **live mode as of 2026-09-12** — real charges, no longer test mode). 3 published tiers — Starter, Pro, Business — differentiated by seat limit and feature gates (see Pricing below). No free trial: checkout charges immediately. Currency: USD (`CASHIER_CURRENCY=usd`), though target market is Jordan/MENA (JOD used inside the provisioned POS product itself).
 
-**Pricing detail:** Plans are stored in `plans` table (`code`, `name`, `display_price`, `seat_limit`, `features`, `stripe_price_id`). Seeded tiers:
-| Plan | Seat limit | multi_store | advanced_reporting |
-|------|-----------|-------------|---------------------|
-| Starter | 3 | No | No |
-| Pro | 10 | Yes | Yes |
-| Business | Unlimited | Yes | Yes |
+**Pricing (live, real numbers — safe to quote):**
+| Plan | Price | Seat limit | multi_store | advanced_reporting |
+|------|-------|-----------|-------------|---------------------|
+| Starter | $39/mo | 3 | No | No |
+| Pro | $89/mo | 10 | Yes | Yes |
+| Business | $179/mo | Unlimited | Yes | Yes |
 
-`display_price` (marketing-facing price string like "$79") and `stripe_price_id` are set later via the staff dashboard, not hardcoded — actual live prices aren't in this repo and must be checked in the dashboard before quoting numbers externally. Branch count is captured as a sizing input during signup (1-500) but is **not** an enforced per-plan limit today.
+Priced to comfortably clear the ~$17-20/mo Railway infra cost per customer instance (each customer = a dedicated app container + MySQL container) while still undercutting sales-gated enterprise competitors. Branch count is captured as a sizing input during signup (1-500) but is **not** an enforced per-plan limit today.
 
 ## Target Audience
 **Target companies:** Retail shops running 2+ physical branches, Jordan / MENA region primarily (matches Arabic-language support in the underlying POS product and JOD as the product's working currency).
@@ -55,9 +55,11 @@ Single-buyer B2B (owner-operator is user + champion + decision-maker + financial
 **Emotional tension:** Not yet validated with real customers (pre-launch, zero paying customers) — avoid asserting unverified customer emotional language until interviews happen.
 
 ## Competitive Landscape
-**Direct:** Foodics — the main named MENA competitor. Larger, enterprise-focused, sales-gated. Tillora differentiates on self-serve signup, transparent published pricing, and instant automated provisioning. A comparison/SEO page already exists (`/foodics-alternative`) targeting "foodics alternative" search intent.
+**Direct:** Foodics — the main named MENA competitor. Larger, enterprise-focused, sales-gated. Tillora differentiates on self-serve signup, transparent published pricing, and instant automated provisioning. A comparison/SEO page exists (`/foodics-alternative`) targeting "foodics alternative" search intent.
 
-**Secondary/Indirect:** Not yet researched/validated — no other named competitors confirmed in the codebase or by the founder yet.
+**Direct #2:** V-TECH (vtech-sys.com) — a real, established ERP/POS vendor across Jordan, Saudi Arabia, Kuwait and the UAE, covering restaurant + retail with a broad traditional ERP feature set. No public pricing found (sales-gated, same framing as Foodics). A comparison/SEO page exists (`/vtech-alternative`) targeting "vtech alternative" search intent.
+
+**Secondary/Indirect:** Not yet researched/validated — no other named competitors confirmed by the founder yet.
 
 **Caution:** Any competitor claim in copy should stay generic/qualified ("typical enterprise POS" framing) rather than asserting specific unverified facts about a competitor's current pricing or features.
 
@@ -134,19 +136,18 @@ Not yet collected — zero real customers so far (Stripe still in test mode). **
 | Full-featured POS (multi-branch, offline checkout, accounting) | Verified feature set in the underlying POS product (`SaasPOS` repo) |
 
 ## Goals
-**Business goal:** Move from pre-launch/soft-launch (Stripe in test mode, zero real customers) to first paying customers in the Jordan/MENA multi-branch retail segment.
+**Business goal:** Live as of 2026-09-12 — real Stripe payments, real pricing, first end-to-end paid signup confirmed working (payment → license → provisioned instance → admin login), all in the same day several critical bugs were found and fixed (see below). Now moving from "technically live" to actually acquiring paying customers in the Jordan/MENA multi-branch retail segment.
 
 **Key conversion action:** Complete the 5-step signup wizard (Plan → Shop Details → Address/Subdomain → Admin Account → Review) and confirm the emailed signup link, which triggers Stripe Checkout.
 
-**Current metrics:** None (pre-revenue). No analytics/tracking integration exists anywhere in the codebase (no GA4, Meta Pixel, PostHog, Mixpanel, Segment, Plausible, Fathom, Hotjar, or any `gtag`/`fbq` script) — **there is currently no way to measure landing page or funnel performance.** This is a significant gap to close before running any paid acquisition.
+**Current metrics:** Effectively zero real customers still (the one completed signup was a $1 internal test, not a real customer) — but the funnel itself is now proven end-to-end and instrumented. GA4 (`G-9B9CK3J8HK`) is live on every public page; UTM first-touch capture feeds `/dashboard/signups`.
 
-## Acquisition & Campaign Capabilities (current state — gap notes)
-- **Live acquisition channels today:** none beyond direct/organic traffic to the marketing site and the `/foodics-alternative` SEO/comparison page (targets "foodics alternative" search intent). No blog exists.
-- **No UTM capture:** no UTM parameter storage anywhere (not on `pending_signups`, `customers`, or any table) — campaign attribution is currently impossible.
-- **No coupon/promo codes:** Stripe Checkout call has no `discounts`/`allow_promotion_codes` option enabled.
-- **No referral or affiliate system** exists.
-- **No analytics/tracking pixels** installed on any page (confirmed via exhaustive repo search).
-- **Implication:** before spending on paid acquisition or running campaigns, the product needs (at minimum) an analytics/tracking install and UTM capture on the signup flow — otherwise spend can't be measured.
+## Acquisition & Campaign Capabilities (updated 2026-09-12)
+- **Analytics: live.** GA4 installed on all public pages (landing, both comparison pages, full signup flow), plus a `signup_completed` conversion event on the success page.
+- **UTM capture: live.** First-touch UTM params captured on landing → stored on `pending_signups` → visible per-signup in `/dashboard/signups` with a converted/not-converted flag.
+- **SEO/comparison pages:** `/foodics-alternative` and `/vtech-alternative`, targeting those two competitors' "alternative" search intent. No blog yet.
+- **Still missing:** coupon/promo codes, referral/affiliate system. Neither exists yet — no `allow_promotion_codes` on Checkout, no referral tables.
+- **Implication:** the previous blocker (no way to measure spend) is closed. Paid acquisition can now be run and measured. The remaining real blocker was never marketing — it was three production bugs that would have silently killed every real signup (a crash-looping tenant deploy, a broken subscription-webhook schema mismatch, and a scheduler with a stuck 24h lock); all three found and fixed 2026-09-12 during the first live test.
 
 ## Live Links (reference)
 - Marketing site / homepage: https://tillora.sphereofthesun.com
@@ -162,5 +163,6 @@ Not yet collected — zero real customers so far (Stripe still in test mode). **
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v3 (2026-09-12) — Went live: real Stripe payments and real pricing ($39/$89/$179, replacing placeholder/unset prices); added V-TECH as a second named direct competitor with its own comparison page; marked analytics/UTM gap from v2 as closed (GA4 + UTM capture shipped); noted first real end-to-end signup test surfaced and fixed three production bugs (tenant deploy crash-loop, broken subscription webhook schema, stuck scheduler lock).
 - v2 (2026-09-11) — Restructured into the standard product-marketing template; added verified pricing tiers/seat limits/feature gates, confirmed signup-flow and Stripe/webhook provisioning details, confirmed **no analytics/tracking and no UTM/coupon/referral capability exists** (key gap for any paid acquisition work), added objections/anti-persona/switching-dynamics/goals sections. Source: direct codebase investigation (Plan model, migrations, seeders, PricingController, StripeWebhookController, routes/web.php, landing views).
 - v1 (date unknown) — Initial freeform context document (product overview, brand, verified capabilities, competitors, live links, how-it-works, related repos) captured before this doc adopted the standard template.

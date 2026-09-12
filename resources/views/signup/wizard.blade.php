@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Set up your shop — Tillora</title>
+@include('partials.seo-meta', [
+    'title' => 'Set up your shop — Tillora',
+    'description' => 'Pick a plan and sign up online — your own branded Tillora POS instance is ready automatically.',
+    'robots' => 'noindex, follow',
+])
 <link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>

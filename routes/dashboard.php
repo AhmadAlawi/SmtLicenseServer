@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Dashboard\AuthController;
+use App\Http\Controllers\Dashboard\BlogPostController;
 use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\ForgotPasswordController;
 use App\Http\Controllers\Dashboard\LicenseController;
@@ -49,6 +50,13 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('plans/{plan}/edit', [PlanController::class, 'edit'])->name('plans.edit');
     Route::put('plans/{plan}', [PlanController::class, 'update'])->name('plans.update');
     Route::post('plans/{plan}/toggle-active', [PlanController::class, 'toggleActive'])->name('plans.toggle-active');
+
+    Route::get('blog-posts', [BlogPostController::class, 'index'])->name('blog-posts.index');
+    Route::get('blog-posts/create', [BlogPostController::class, 'create'])->name('blog-posts.create');
+    Route::post('blog-posts', [BlogPostController::class, 'store'])->name('blog-posts.store');
+    Route::get('blog-posts/{blogPost}/edit', [BlogPostController::class, 'edit'])->name('blog-posts.edit');
+    Route::put('blog-posts/{blogPost}', [BlogPostController::class, 'update'])->name('blog-posts.update');
+    Route::post('blog-posts/{blogPost}/toggle-published', [BlogPostController::class, 'togglePublished'])->name('blog-posts.toggle-published');
 
     Route::get('releases', [ReleaseController::class, 'index'])->name('releases.index');
     Route::get('releases/create', [ReleaseController::class, 'create'])->name('releases.create');

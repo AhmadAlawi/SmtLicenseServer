@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Tillora — Retail Cloud POS</title>
+@include('partials.seo-meta', [
+    'title' => 'Tillora — Retail Cloud POS',
+    'description' => 'Self-serve multi-branch retail POS. Pick a plan, sign up online, and your own branded instance is live in minutes — no sales call.',
+])
 <link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>

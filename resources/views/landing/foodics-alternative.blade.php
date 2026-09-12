@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Tillora — A Self-Serve Alternative to Foodics for Multi-Branch Retail</title>
-<meta name="description" content="Looking for a Foodics alternative? Tillora gives multi-branch retail shops transparent pricing, instant self-serve signup, and a private instance per store — no sales call required.">
+@include('partials.seo-meta', [
+    'title' => 'Tillora — A Self-Serve Alternative to Foodics for Multi-Branch Retail',
+    'description' => 'Looking for a Foodics alternative? Tillora gives multi-branch retail shops transparent pricing, instant self-serve signup, and a private instance per store — no sales call required.',
+])
 <link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>

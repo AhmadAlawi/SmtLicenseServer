@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PricingController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\UpdateFeedController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +20,13 @@ Route::get('foodics-alternative', [LandingController::class, 'foodicsAlternative
 // SEO/comparison landing page — targets "vtech alternative" search intent
 // (V-TECH / vtech-sys.com, a Jordan/KSA/Kuwait/UAE POS+ERP vendor).
 Route::get('vtech-alternative', [LandingController::class, 'vtechAlternative'])->name('vtech-alternative');
+
+// SEO content — gives the sitemap real size and organic search something
+// to index beyond the handful of static marketing pages.
+Route::get('blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('blog/{blogPost:slug}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Signup wizard. No auth — a prospective customer doesn't have an account
 // yet; the license itself is minted by the Stripe webhook once payment is
