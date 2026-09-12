@@ -113,7 +113,7 @@
 <label class="font-label-lg text-label-lg text-on-surface font-semibold" for="subdomain">Subdomain</label>
 <div class="flex items-center bg-surface-container-low rounded-full px-4 py-1.5 focus-within:bg-surface-container-lowest transition-all">
 <span class="material-symbols-outlined text-secondary pr-2">dns</span>
-<input class="bg-transparent font-headline-sm text-headline-sm text-on-surface outline-none w-full font-bold lowercase" id="subdomain" name="subdomain" type="text" value="{{ old('subdomain') }}" pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="30" required>
+<input class="bg-transparent font-headline-sm text-headline-sm text-on-surface outline-none w-full font-bold lowercase" id="subdomain" name="subdomain" type="text" value="{{ old('subdomain') }}" pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="30" required autocapitalize="off" autocorrect="off" spellcheck="false">
 <span class="font-headline-sm text-headline-sm text-secondary font-bold select-none pr-2">.{{ $rootDomain ?: 'tillora.app' }}</span>
 </div>
 </div>
@@ -256,6 +256,9 @@
     document.getElementById('subdomain').addEventListener('input', function () {
         clearTimeout(timer);
         const status = document.getElementById('subdomainStatusText');
+        const cursor = this.selectionStart;
+        this.value = this.value.toLowerCase();
+        this.setSelectionRange(cursor, cursor);
         const value = this.value.trim();
         if (value.length < 3) { status.textContent = 'Enter at least 3 characters to check availability'; return; }
         timer = setTimeout(async () => {
