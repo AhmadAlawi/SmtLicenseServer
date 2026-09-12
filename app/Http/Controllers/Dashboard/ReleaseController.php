@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Release;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -42,5 +43,19 @@ class ReleaseController extends Controller
 
         return redirect()->route('dashboard.releases.index')
             ->with('status', "Version {$release->version} published on the {$release->channel} channel — every active customer has been emailed.");
+    }
+
+    /**
+     * A bad/test release left in the feed would show up as the "latest"
+     * on its channel for every tenant polling it — this needs a real
+     * removal path, not just a publish-only page.
+     */
+    public function destroy(Release $release): RedirectResponse
+    {
+        Storage::disk('local')->delete($release->zip_path);
+        $version = $release->version;
+        $release->delete();
+
+        return redirect()->route('dashboard.releases.index')->with('status', "Release {$version} deleted.");
     }
 }

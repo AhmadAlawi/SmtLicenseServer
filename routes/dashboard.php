@@ -53,4 +53,5 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('releases', [ReleaseController::class, 'index'])->name('releases.index');
     Route::get('releases/create', [ReleaseController::class, 'create'])->name('releases.create');
     Route::post('releases', [ReleaseController::class, 'store'])->name('releases.store');
+    Route::delete('releases/{release}', [ReleaseController::class, 'destroy'])->name('releases.destroy');
 });

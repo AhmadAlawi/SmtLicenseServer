@@ -9,7 +9,7 @@
         <p style="color:#2e7d32">{{ session('status') }}</p>
     @endif
     <table>
-        <thead><tr><th>Version</th><th>Channel</th><th>Published</th><th>By</th><th>Changelog</th></tr></thead>
+        <thead><tr><th>Version</th><th>Channel</th><th>Published</th><th>By</th><th>Changelog</th><th>Actions</th></tr></thead>
         <tbody>
         @foreach ($releases as $release)
             <tr>
@@ -18,6 +18,13 @@
                 <td>{{ $release->published_at?->format('Y-m-d H:i') ?? '—' }}</td>
                 <td>{{ $release->publisher?->name ?? '—' }}</td>
                 <td>{{ \Illuminate\Support\Str::limit($release->changelog, 80) }}</td>
+                <td>
+                    <form class="inline" method="POST" action="{{ route('dashboard.releases.destroy', $release) }}" onsubmit="return confirm('Delete release {{ $release->version }}? Any tenant still offered it will no longer see it as available.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
             </tr>
         @endforeach
         </tbody>
