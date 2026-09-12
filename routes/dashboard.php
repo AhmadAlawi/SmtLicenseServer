@@ -5,6 +5,7 @@ use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\ForgotPasswordController;
 use App\Http\Controllers\Dashboard\LicenseController;
 use App\Http\Controllers\Dashboard\PlanController;
+use App\Http\Controllers\Dashboard\ReleaseController;
 use App\Http\Controllers\Dashboard\SignupController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,4 +49,8 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('plans/{plan}/edit', [PlanController::class, 'edit'])->name('plans.edit');
     Route::put('plans/{plan}', [PlanController::class, 'update'])->name('plans.update');
     Route::post('plans/{plan}/toggle-active', [PlanController::class, 'toggleActive'])->name('plans.toggle-active');
+
+    Route::get('releases', [ReleaseController::class, 'index'])->name('releases.index');
+    Route::get('releases/create', [ReleaseController::class, 'create'])->name('releases.create');
+    Route::post('releases', [ReleaseController::class, 'store'])->name('releases.store');
 });

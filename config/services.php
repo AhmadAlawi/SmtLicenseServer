@@ -67,4 +67,19 @@ return [
         'id' => env('GA4_MEASUREMENT_ID'),
     ],
 
+    // Update-push system — this server hosts the public feed every SaasPOS
+    // tenant polls (SaasPOS's own updater engine already exists; this is
+    // just what feeds it). The secret key never leaves this env var — it
+    // signs each release's zip server-side at publish time
+    // ({@see \App\Actions\Releases\PublishRelease}) so staff never handle a
+    // manual signing step. The public half is the SAME value every tenant
+    // gets as POS_UPDATE_PUBLIC_KEY at provisioning time
+    // ({@see \App\Jobs\ProvisionInstance}) — changing this key requires
+    // re-provisioning every tenant's public key too, or old installs can
+    // never verify a new release again.
+    'updates' => [
+        'signing_secret_key' => env('UPDATE_SIGNING_SECRET_KEY', ''),
+        'signing_public_key' => env('UPDATE_SIGNING_PUBLIC_KEY', ''),
+    ],
+
 ];

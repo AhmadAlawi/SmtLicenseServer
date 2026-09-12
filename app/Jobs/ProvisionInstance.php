@@ -109,6 +109,15 @@ class ProvisionInstance implements ShouldQueue
                 'DB_PASSWORD'           => $dbPassword,
                 'LICENSE_KEY'           => $this->licenseKey,
                 'LICENSE_HMAC_SECRET'   => $this->hmacSecret,
+                // Explicit, not just relying on SaasPOS's own config
+                // default — this is the actual contract between the two
+                // repos, and asserting it here means a future default
+                // change on either side can't silently drift them apart
+                // (exactly what happened before this was set at all: every
+                // tenant defaulted to a dead vendor URL for months).
+                'POS_LICENSE_CHECK_URL'  => url('/api/v1/instances/validate'),
+                'POS_UPDATE_FEED_URL'    => route('updates.feed'),
+                'POS_UPDATE_PUBLIC_KEY'  => (string) config('services.updates.signing_public_key', ''),
                 'TENANT_COMPANY_NAME'   => $this->signup['company_name'],
                 'TENANT_ADMIN_NAME'     => $this->signup['admin_name'],
                 'TENANT_ADMIN_EMAIL'    => $this->signup['admin_email'],

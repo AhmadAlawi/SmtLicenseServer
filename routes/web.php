@@ -3,6 +3,7 @@
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\UpdateFeedController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
 
@@ -35,5 +36,12 @@ Route::get('pricing/success', [PricingController::class, 'success'])->name('sign
 Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->middleware(VerifyWebhookSignature::class)
     ->name('cashier.webhook');
+
+// Public update feed — every SaasPOS tenant's own updater engine polls
+// this (see UpdateFeedController). No auth; nothing here is sensitive
+// beyond the release binaries themselves, which are meant to be
+// downloadable by any tenant.
+Route::get('updates/feed.json', [UpdateFeedController::class, 'feed'])->name('updates.feed');
+Route::get('updates/download/{release}', [UpdateFeedController::class, 'download'])->name('updates.download');
 
 require __DIR__.'/dashboard.php';

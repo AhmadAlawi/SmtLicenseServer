@@ -46,6 +46,7 @@
     <a href="{{ route('dashboard.signups.index') }}">Signups</a>
     <a href="{{ route('dashboard.licenses.index') }}">Licenses</a>
     <a href="{{ route('dashboard.plans.index') }}">Plans</a>
+    <a href="{{ route('dashboard.releases.index') }}">Releases</a>
     <form class="inline" method="POST" action="{{ route('dashboard.logout') }}" style="margin-left:auto">
         @csrf
         <button type="submit" style="background:transparent;border:1px solid #444;color:#cfd2ff;padding:6px 12px;border-radius:6px">Log out</button>
