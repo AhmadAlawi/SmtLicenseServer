@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Customer;
 use App\Services\Cloudflare\CloudflareClient;
+use App\Services\Meta\MetaClient;
 use App\Services\Railway\RailwayClient;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -37,6 +38,11 @@ class AppServiceProvider extends ServiceProvider
         // without every call site having to pull config itself.
         $this->app->singleton(RailwayClient::class, fn () => new RailwayClient((string) config('services.railway.token')));
         $this->app->singleton(CloudflareClient::class, fn () => new CloudflareClient((string) config('services.cloudflare.token')));
+        $this->app->singleton(MetaClient::class, fn () => new MetaClient(
+            (string) config('services.meta.app_id'),
+            (string) config('services.meta.app_secret'),
+            route('dashboard.social.callback'),
+        ));
     }
 
     /**

@@ -67,6 +67,13 @@ return [
         'id' => env('GA4_MEASUREMENT_ID'),
     ],
 
+    // Meta (Facebook/Instagram) OAuth — ads-only connection. See
+    // App\Services\Meta\MetaClient and Dashboard\SocialConnectionController.
+    'meta' => [
+        'app_id'     => env('META_APP_ID', ''),
+        'app_secret' => env('META_APP_SECRET', ''),
+    ],
+
     // Update-push system — this server hosts the public feed every SaasPOS
     // tenant polls (SaasPOS's own updater engine already exists; this is
     // just what feeds it). The secret key never leaves this env var — it

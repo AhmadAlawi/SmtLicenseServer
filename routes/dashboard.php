@@ -8,6 +8,7 @@ use App\Http\Controllers\Dashboard\LicenseController;
 use App\Http\Controllers\Dashboard\PlanController;
 use App\Http\Controllers\Dashboard\ReleaseController;
 use App\Http\Controllers\Dashboard\SignupController;
+use App\Http\Controllers\Dashboard\SocialConnectionController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -58,6 +59,13 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('blog-posts/{blogPost}/edit', [BlogPostController::class, 'edit'])->name('blog-posts.edit');
     Route::put('blog-posts/{blogPost}', [BlogPostController::class, 'update'])->name('blog-posts.update');
     Route::post('blog-posts/{blogPost}/toggle-published', [BlogPostController::class, 'togglePublished'])->name('blog-posts.toggle-published');
+
+    Route::get('social', [SocialConnectionController::class, 'index'])->name('social.index');
+    Route::get('social/connect', [SocialConnectionController::class, 'redirectToFacebook'])->name('social.connect');
+    Route::get('social/callback', [SocialConnectionController::class, 'callback'])->name('social.callback');
+    Route::get('social/select-account', [SocialConnectionController::class, 'showSelectAccount'])->name('social.select-account');
+    Route::post('social/select-account', [SocialConnectionController::class, 'selectAccount']);
+    Route::post('social/disconnect', [SocialConnectionController::class, 'disconnect'])->name('social.disconnect');
 
     Route::get('releases', [ReleaseController::class, 'index'])->name('releases.index');
     Route::get('releases/create', [ReleaseController::class, 'create'])->name('releases.create');
