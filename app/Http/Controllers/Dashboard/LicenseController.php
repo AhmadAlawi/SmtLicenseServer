@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\License;
+use App\Models\Plan;
 use App\Services\Railway\RailwayClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /** Manual overrides SMTGROUP support/ops needs (SaaS conversion plan Phase 4/7). */
@@ -16,8 +18,9 @@ class LicenseController extends Controller
     public function index(): View
     {
         $licenses = License::query()->with(['customer', 'plan', 'instance'])->latest()->paginate(25);
+        $plans    = Plan::query()->orderBy('seat_limit')->get(['id', 'name']);
 
-        return view('dashboard.licenses.index', compact('licenses'));
+        return view('dashboard.licenses.index', compact('licenses', 'plans'));
     }
 
     public function suspend(License $license): RedirectResponse
@@ -48,6 +51,24 @@ class LicenseController extends Controller
         $license->update(['grace_until' => now()->addDays(14)]);
 
         return back()->with('status', "Grace period for license #{$license->id} extended to {$license->grace_until->toDateString()}.");
+    }
+
+    /**
+     * Staff-driven plan change (upgrade/downgrade a customer's own
+     * subscription without going through Stripe Checkout again) — takes
+     * effect immediately on the license row; the instance picks up the new
+     * seat_limit/features on its next phone-home (max ~30 days per the
+     * "never lock the app" recheck cadence, or immediately if staff also
+     * tells the customer to hit "Re-check now" in their own panel).
+     */
+    public function changePlan(Request $request, License $license): RedirectResponse
+    {
+        $data = $request->validate(['plan_id' => ['required', 'integer', Rule::exists('plans', 'id')]]);
+
+        $plan = Plan::findOrFail($data['plan_id']);
+        $license->update(['plan_id' => $plan->id]);
+
+        return back()->with('status', "License #{$license->id} moved to plan \"{$plan->name}\".");
     }
 
     /**

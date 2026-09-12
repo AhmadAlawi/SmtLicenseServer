@@ -10,7 +10,16 @@
             <tr>
                 <td>{{ $license->id }}</td>
                 <td>{{ $license->customer->name }}</td>
-                <td>{{ $license->plan?->name ?? '—' }}</td>
+                <td>
+                    <form class="inline" method="POST" action="{{ route('dashboard.licenses.change-plan', $license) }}">
+                        @csrf
+                        <select name="plan_id" onchange="this.form.submit()">
+                            @foreach ($plans as $plan)
+                                <option value="{{ $plan->id }}" @selected($license->plan_id === $plan->id)>{{ $plan->name }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                </td>
                 <td class="status status-{{ $license->status }}">{{ $license->status }}</td>
                 <td>{{ $instance?->default_domain ?? '—' }}</td>
                 <td>
