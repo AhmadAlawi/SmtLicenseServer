@@ -10,4 +10,11 @@ Artisan::command('inspire', function () {
 
 // SaaS conversion plan Phase 7 — Railway builds are async; this catches
 // each instance up to 'ready'/'failed' without blocking the queue worker.
-Schedule::command('railway:poll-deployments')->everyMinute()->withoutOverlapping();
+// withoutOverlapping() defaults to a 24-HOUR mutex expiry — CACHE_STORE is
+// 'database', so that lock survives container restarts. A deploy that
+// kills schedule:work mid-run (no chance to release it) then blocks every
+// future run for up to a day. Bound it to a few minutes instead — long
+// enough to cover a real run, short enough that a stuck lock self-heals
+// fast. (Found live: a stuck lock from an earlier redeploy silently
+// blocked this from firing at all until manually cleared.)
+Schedule::command('railway:poll-deployments')->everyMinute()->withoutOverlapping(5);
