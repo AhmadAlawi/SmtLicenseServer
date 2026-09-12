@@ -72,6 +72,28 @@ class LicenseController extends Controller
     }
 
     /**
+     * Re-arm an instance PollRailwayDeployments gave up on. Confirmed live
+     * (2026-09-12): once an instance flips to 'failed', the poller's own
+     * query (`where provisioning_status = 'deploying'`) permanently
+     * excludes it — even after staff fix the underlying Railway problem
+     * and the deployment genuinely succeeds, nothing ever re-checks it or
+     * sends the customer their confirmation email. This puts it back in
+     * the poller's queue so the next scheduled run (every minute) picks
+     * up Railway's REAL current status rather than assuming success here.
+     */
+    public function retryProvisioning(License $license): RedirectResponse
+    {
+        $instance = $license->instance;
+        if ($instance === null) {
+            return back()->withErrors(['retry' => 'This license has no instance yet.']);
+        }
+
+        $instance->forceFill(['provisioning_status' => 'deploying', 'provisioning_error' => null])->save();
+
+        return back()->with('status', "License #{$license->id}'s instance re-queued for a status check (next run within a minute).");
+    }
+
+    /**
      * Register a customer's own separate domain (e.g. ahmadpos.com — not a
      * subdomain of the platform's own domain) on their Railway service.
      * Staff-driven (SaaS conversion plan Phase 7 decision): shows the

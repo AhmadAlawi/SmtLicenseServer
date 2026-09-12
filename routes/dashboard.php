@@ -42,6 +42,7 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::post('licenses/{license}/reissue-secret', [LicenseController::class, 'reissueSecret'])->name('licenses.reissue-secret');
     Route::post('licenses/{license}/extend-grace', [LicenseController::class, 'extendGrace'])->name('licenses.extend-grace');
     Route::post('licenses/{license}/change-plan', [LicenseController::class, 'changePlan'])->name('licenses.change-plan');
+    Route::post('licenses/{license}/retry-provisioning', [LicenseController::class, 'retryProvisioning'])->name('licenses.retry-provisioning');
     Route::post('licenses/{license}/add-custom-domain', [LicenseController::class, 'addCustomDomain'])->name('licenses.add-custom-domain');
 
     Route::get('plans', [PlanController::class, 'index'])->name('plans.index');

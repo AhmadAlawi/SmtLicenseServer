@@ -27,6 +27,11 @@
                     @if ($instance?->provisioning_error)
                         <div style="color:#b3261e;font-size:12px">{{ $instance->provisioning_error }}</div>
                     @endif
+                    @if ($instance?->provisioning_status === 'failed')
+                        <form class="inline" method="POST" action="{{ route('dashboard.licenses.retry-provisioning', $license) }}">
+                            @csrf<button type="submit">Retry check</button>
+                        </form>
+                    @endif
                 </td>
                 <td>
                     @if ($instance?->custom_domain)
