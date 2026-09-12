@@ -75,12 +75,23 @@ class PlanController extends Controller
             'display_price'   => ['nullable', 'string', 'max:32'],
             'seat_limit'      => ['nullable', 'integer', 'min:1'],
             'stripe_price_id' => ['nullable', 'string', 'max:255'],
+            'currency_prices' => ['nullable', 'string'],
             'features'        => ['nullable', 'array'],
             'features.*'      => ['string', Rule::in(self::FEATURE_KEYS)],
         ]);
 
         $data['features'] = array_fill_keys($data['features'] ?? [], true);
         $data['is_active'] = $request->boolean('is_active', true);
+
+        // Raw JSON textarea, not a per-currency form builder — country
+        // pricing (JOD/SAR/AED/EGP for the header currency dropdown) is
+        // edited rarely and by whoever set up the Stripe prices, so a
+        // direct {"SAR": {"amount": 19800, "stripe_price_id": "price_..."}}
+        // shape is faster to maintain than several bespoke fields per
+        // currency. Empty/invalid JSON just clears it rather than 500ing.
+        $raw = trim((string) ($data['currency_prices'] ?? ''));
+        $decoded = $raw !== '' ? json_decode($raw, true) : null;
+        $data['currency_prices'] = is_array($decoded) ? $decoded : null;
 
         return $data;
     }

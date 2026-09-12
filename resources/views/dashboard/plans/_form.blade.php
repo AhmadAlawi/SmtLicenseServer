@@ -19,9 +19,13 @@
     <label>Seat limit (blank = unlimited)</label>
     <input type="number" name="seat_limit" min="1" value="{{ old('seat_limit', $plan?->seat_limit) }}">
 
-    <label>Stripe price ID</label>
+    <label>Stripe price ID (USD, default)</label>
     <input type="text" name="stripe_price_id" value="{{ old('stripe_price_id', $plan?->stripe_price_id) }}" placeholder="price_...">
     <div class="hint">Create the Product/Price in Stripe first, paste its ID here.</div>
+
+    <label>Country/currency prices (header dropdown)</label>
+    <textarea name="currency_prices" rows="6" style="width:100%;font-family:monospace;font-size:12px;">{{ old('currency_prices', $plan?->currency_prices ? json_encode($plan->currency_prices, JSON_PRETTY_PRINT) : '') }}</textarea>
+    <div class="hint">Raw JSON: {"SAR": {"amount": 19800, "stripe_price_id": "price_..."}, "JOD": {"amount": 3900}}. "amount" is the smallest unit (fils/halalas/piastres). Omit stripe_price_id for a currency Stripe doesn't support (e.g. JOD) — it'll display in that currency but charge the USD price above instead.</div>
 
     <label>Features</label>
     @foreach ($featureKeys as $key)
