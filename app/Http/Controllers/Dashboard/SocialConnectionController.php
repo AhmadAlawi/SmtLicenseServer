@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-/** Ads-only "Connect with Facebook" — no organic posting permissions, just enough to create/manage ad campaigns via the Marketing API later. */
+/** "Connect with Facebook" — Marketing API (ads) + organic posting (Page feed, Instagram) scopes. */
 class SocialConnectionController extends Controller
 {
     public function index(): View
@@ -114,7 +114,9 @@ class SocialConnectionController extends Controller
         $igAccountId = null;
         if ($page) {
             try {
-                $igAccountId = $meta->getInstagramBusinessAccountId($page['id'], $userToken);
+                // Page-scoped field — the Page's own access_token is the
+                // correct credential here, not the user token.
+                $igAccountId = $meta->getInstagramBusinessAccountId($page['id'], $page['access_token'] ?? $userToken);
             } catch (\Throwable $e) {
                 // Missing pages_read_engagement or the Page has no linked
                 // Instagram account — don't let this block the connection
@@ -129,6 +131,7 @@ class SocialConnectionController extends Controller
             'ad_account_name'                => $adAccount['name'] ?? null,
             'page_id'                        => $page['id'] ?? null,
             'page_name'                      => $page['name'] ?? null,
+            'page_access_token'              => $page['access_token'] ?? null,
             'instagram_business_account_id'  => $igAccountId,
             'token_expires_at'               => $tokenExpires,
         ]);
