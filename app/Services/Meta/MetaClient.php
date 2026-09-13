@@ -142,6 +142,96 @@ class MetaClient
         return $result['id'];
     }
 
+    /** Uploads an image to the ad account's image library from a public URL. Returns the image hash (used by ad creatives). */
+    public function uploadAdImage(string $adAccountId, string $userToken, string $imageUrl): string
+    {
+        $result = $this->post("/{$adAccountId}/adimages", [
+            'url'          => $imageUrl,
+            'access_token' => $userToken,
+        ]);
+
+        $images = $result['images'] ?? [];
+        $first = reset($images);
+
+        if (! $first || empty($first['hash'])) {
+            throw new RuntimeException('Meta Graph API error: adimages upload returned no hash: '.json_encode($result, JSON_UNESCAPED_SLASHES));
+        }
+
+        return $first['hash'];
+    }
+
+    /** Creates a paused Campaign. special_ad_categories is required by the API even when empty (non-regulated verticals like retail software pass []). Returns the campaign id. */
+    public function createCampaign(string $adAccountId, string $userToken, string $name, string $objective): string
+    {
+        $result = $this->post("/{$adAccountId}/campaigns", [
+            'name'                   => $name,
+            'objective'              => $objective,
+            'special_ad_categories'  => json_encode([]),
+            'status'                 => 'PAUSED',
+            'access_token'           => $userToken,
+        ]);
+
+        return $result['id'];
+    }
+
+    /**
+     * Creates a paused Ad Set under a Campaign.
+     *
+     * @param array{geo_locations: array{countries: string[]}, age_min: int, age_max: int} $targeting
+     */
+    public function createAdSet(string $adAccountId, string $userToken, string $name, string $campaignId, int $dailyBudgetCents, array $targeting): string
+    {
+        $result = $this->post("/{$adAccountId}/adsets", [
+            'name'               => $name,
+            'campaign_id'        => $campaignId,
+            'daily_budget'       => (string) $dailyBudgetCents,
+            'billing_event'      => 'IMPRESSIONS',
+            'optimization_goal'  => 'LINK_CLICKS',
+            'bid_strategy'       => 'LOWEST_COST_WITHOUT_CAP',
+            'targeting'          => json_encode($targeting),
+            'status'             => 'PAUSED',
+            'access_token'       => $userToken,
+        ]);
+
+        return $result['id'];
+    }
+
+    /** Creates an Ad Creative — a Page-identity link ad pointing at $link, using an already-uploaded image hash. Returns the creative id. */
+    public function createAdCreative(string $adAccountId, string $userToken, string $name, string $pageId, string $imageHash, string $message, string $link): string
+    {
+        $objectStorySpec = [
+            'page_id'   => $pageId,
+            'link_data' => [
+                'image_hash'    => $imageHash,
+                'link'          => $link,
+                'message'       => $message,
+                'call_to_action' => ['type' => 'LEARN_MORE', 'value' => ['link' => $link]],
+            ],
+        ];
+
+        $result = $this->post("/{$adAccountId}/adcreatives", [
+            'name'              => $name,
+            'object_story_spec' => json_encode($objectStorySpec),
+            'access_token'      => $userToken,
+        ]);
+
+        return $result['id'];
+    }
+
+    /** Creates a paused Ad under an Ad Set, using an already-created creative. Returns the ad id. */
+    public function createAd(string $adAccountId, string $userToken, string $name, string $adSetId, string $creativeId): string
+    {
+        $result = $this->post("/{$adAccountId}/ads", [
+            'name'         => $name,
+            'adset_id'     => $adSetId,
+            'creative'     => json_encode(['creative_id' => $creativeId]),
+            'status'       => 'PAUSED',
+            'access_token' => $userToken,
+        ]);
+
+        return $result['id'];
+    }
+
     /** @return array<string,mixed> */
     private function get(string $path, array $query): array
     {
