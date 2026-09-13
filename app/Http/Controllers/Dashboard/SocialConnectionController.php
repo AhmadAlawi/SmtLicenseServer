@@ -111,7 +111,17 @@ class SocialConnectionController extends Controller
     /** @param array{id:string,name:string}|null $adAccount @param array{id:string,name:string}|null $page */
     private function saveConnection(string $userToken, $tokenExpires, ?array $adAccount, ?array $page, MetaClient $meta): void
     {
-        $igAccountId = $page ? $meta->getInstagramBusinessAccountId($page['id'], $userToken) : null;
+        $igAccountId = null;
+        if ($page) {
+            try {
+                $igAccountId = $meta->getInstagramBusinessAccountId($page['id'], $userToken);
+            } catch (\Throwable $e) {
+                // Missing pages_read_engagement or the Page has no linked
+                // Instagram account — don't let this block the connection
+                // itself, the ad account + Page are still useful without it.
+                report($e);
+            }
+        }
 
         SocialConnection::query()->updateOrCreate(['provider' => 'facebook'], [
             'user_access_token'              => $userToken,

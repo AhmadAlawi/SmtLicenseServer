@@ -19,8 +19,8 @@ class MetaClient
 
     private const OAUTH_DIALOG = 'https://www.facebook.com/'.self::GRAPH_VERSION.'/dialog/oauth';
 
-    /** Ads-only — no pages_manage_posts/instagram_content_publish. business_management lists ad accounts under a Business Manager; pages_show_list is read-only Page visibility (needed just to see id/name — /me/accounts returns nothing without it). */
-    private const SCOPES = 'ads_management,ads_read,business_management,pages_show_list';
+    /** Ads-only — no pages_manage_posts/instagram_content_publish. business_management lists ad accounts under a Business Manager; pages_show_list is read-only Page visibility; pages_read_engagement is needed to read the Page's linked instagram_business_account field. */
+    private const SCOPES = 'ads_management,ads_read,business_management,pages_show_list,pages_read_engagement';
 
     public function __construct(
         private readonly string $appId,
