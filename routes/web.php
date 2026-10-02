@@ -53,19 +53,4 @@ Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
 Route::get('updates/feed.json', [UpdateFeedController::class, 'feed'])->name('updates.feed');
 Route::get('updates/download/{release}', [UpdateFeedController::class, 'download'])->name('updates.download');
 
-// TEMP diagnostic: wipes a stuck tenant's DB via raw PDO over Railway's
-// private network (same pattern used for the lulia crash-loop fix) so a
-// clean `migrate` can run. Remove right after use — never leave this live.
-Route::post('_tmp/wipe-tenant-db', function (\Illuminate\Http\Request $request) {
-    abort_unless($request->header('X-Wipe-Secret') === 'pets-shop-fix-2026-10', 403);
-    $host = $request->input('host');
-    $db   = $request->input('db');
-    $user = $request->input('user');
-    $pass = $request->input('pass');
-    $pdo = new \PDO("mysql:host={$host};port=3306", $user, $pass);
-    $pdo->exec("DROP DATABASE IF EXISTS `{$db}`");
-    $pdo->exec("CREATE DATABASE `{$db}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-    return response()->json(['ok' => true]);
-});
-
 require __DIR__.'/dashboard.php';
