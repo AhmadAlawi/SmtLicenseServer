@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Stripe can't send Laravel's CSRF token — its own
         // Stripe-Signature header (verified by Cashier's
         // VerifyWebhookSignature middleware) is the real auth here.
-        $middleware->validateCsrfTokens(except: ['stripe/webhook', '_tmp/wipe-tenant-db']);
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
