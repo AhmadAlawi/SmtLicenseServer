@@ -53,27 +53,4 @@ Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
 Route::get('updates/feed.json', [UpdateFeedController::class, 'feed'])->name('updates.feed');
 Route::get('updates/download/{release}', [UpdateFeedController::class, 'download'])->name('updates.download');
 
-// TEMP: one-off DB export for the Railway->VPS migration. Streams a
-// mysqldump of this instance's own DB back over HTTPS so it can be
-// restored on the new host. Remove immediately after use.
-Route::get('_tmp/export-db', function (\Illuminate\Http\Request $request) {
-    abort_unless($request->query('secret') === 'vps-migrate-2026-10-05', 403);
-    $host = config('database.connections.mysql.host');
-    $db   = config('database.connections.mysql.database');
-    $user = config('database.connections.mysql.username');
-    $pass = config('database.connections.mysql.password');
-    $cmd = sprintf(
-        'mysqldump --no-tablespaces -h %s -u %s -p%s %s 2>/tmp/dump_err.log',
-        escapeshellarg($host), escapeshellarg($user), escapeshellarg($pass), escapeshellarg($db)
-    );
-    $output = shell_exec($cmd);
-    if ($output === null || $output === '') {
-        return response('mysqldump failed: ' . @file_get_contents('/tmp/dump_err.log'), 500);
-    }
-    return response($output, 200, [
-        'Content-Type' => 'application/sql',
-        'Content-Disposition' => 'attachment; filename="license_server.sql"',
-    ]);
-});
-
 require __DIR__.'/dashboard.php';
