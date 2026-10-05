@@ -58,22 +58,19 @@ Route::get('updates/download/{release}', [UpdateFeedController::class, 'download
 // restored on the new host. Remove immediately after use.
 Route::get('_tmp/export-db', function (\Illuminate\Http\Request $request) {
     abort_unless($request->query('secret') === 'vps-migrate-2026-10-05', 403);
-    $pdo = \Illuminate\Support\Facades\DB::connection()->getPdo();
-    $db = config('database.connections.mysql.database');
-    $tables = $pdo->query('SHOW TABLES')->fetchAll(\PDO::FETCH_COLUMN);
-    $sql = "SET FOREIGN_KEY_CHECKS=0;\n";
-    foreach ($tables as $table) {
-        $create = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(\PDO::FETCH_ASSOC);
-        $sql .= "DROP TABLE IF EXISTS `{$table}`;\n" . $create['Create Table'] . ";\n";
-        $rows = $pdo->query("SELECT * FROM `{$table}`")->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($rows as $row) {
-            $cols = array_map(fn($c) => "`{$c}`", array_keys($row));
-            $vals = array_map(fn($v) => $v === null ? 'NULL' : $pdo->quote((string) $v), array_values($row));
-            $sql .= "INSERT INTO `{$table}` (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ");\n";
-        }
+    $host = config('database.connections.mysql.host');
+    $db   = config('database.connections.mysql.database');
+    $user = config('database.connections.mysql.username');
+    $pass = config('database.connections.mysql.password');
+    $cmd = sprintf(
+        'mysqldump --no-tablespaces -h %s -u %s -p%s %s 2>/tmp/dump_err.log',
+        escapeshellarg($host), escapeshellarg($user), escapeshellarg($pass), escapeshellarg($db)
+    );
+    $output = shell_exec($cmd);
+    if ($output === null || $output === '') {
+        return response('mysqldump failed: ' . @file_get_contents('/tmp/dump_err.log'), 500);
     }
-    $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
-    return response($sql, 200, [
+    return response($output, 200, [
         'Content-Type' => 'application/sql',
         'Content-Disposition' => 'attachment; filename="license_server.sql"',
     ]);
